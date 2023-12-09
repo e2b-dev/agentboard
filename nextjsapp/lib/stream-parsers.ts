@@ -24,28 +24,5 @@ export function parseOpenInterpreterStream(): AIStreamParser {
         const formattedData = decodeURIComponent(data)
         
         return formattedData
-        // const formattedData = pythonToJSFormat(data)
-        // // later, add any parsing logic here
-        // // get first key of object
-        // try{
-        //     const parsedData = JSON.parse(formattedData)
-        //     console.log(parsedData)
-        //     const keys = Object.keys(parsedData)
-        //     const key = keys[0]
-        //     if (key == 'code' || key == 'message' || key == 'output') {
-        //         return parsedData[key]
-        //     }
-        //     else if (key == "end_of_code") {
-        //         return "\n"
-        //     }
-        //     else {
-        //         // return empty string if key is not code, message, or output
-        //         return ''
-        //     }
-        // }
-        // catch (e) {
-        //     console.log(e)
-        //     return data
-        // }
     }
 }
