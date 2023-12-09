@@ -6,16 +6,16 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Explain technical concepts',
-    message: `What is a "serverless function"?`
+    heading: 'Run Python code to find the current local time in other cities',
+    message: `What is the current time in Seattle?`
   },
   {
-    heading: 'Summarize an article',
-    message: 'Summarize the following article for a 2nd grader: \n'
+    heading: 'Summarize a Paul Graham article and write it to a file',
+    message: 'Extract info from this webpage http://www.paulgraham.com/hs.html, then generate a summary for it and write it to a .txt. file. \n'
   },
   {
-    heading: 'Draft an email',
-    message: `Draft an email to my boss about the following: \n`
+    heading: 'List all of the files in a directory',
+    message: `List all the files in the current working directory \n`
   }
 ]
 
@@ -24,18 +24,18 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
     <div className="mx-auto max-w-2xl px-4">
       <div className="rounded-lg border bg-background p-8">
         <h1 className="mb-2 text-lg font-semibold">
-          Welcome to Next.js AI Chatbot!
+          Welcome to Agentboard!
         </h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          This is an open source AI chatbot app template built with{' '}
-          <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{' '}
-          <ExternalLink href="https://vercel.com/storage/kv">
-            Vercel KV
-          </ExternalLink>
-          .
+          Agentboard is an easy way to try out AI agents from the comfort of the web.
+          All agents run in sandboxed Docker containers and are completely ephemeral.
         </p>
+        <p className="mb-2 leading-normal text-muted-foreground">Currently, I've implemented 
+        <ExternalLink href="https://openinterpreter.com/">Open Interpreter</ExternalLink>, with plans to
+        expand to other AI agents such as <ExternalLink href="https://github.com/yoheinakajima/babyagi">BabyAGI</ExternalLink>
+        in the future.</p> 
         <p className="leading-normal text-muted-foreground">
-          You can start a conversation here or try the following examples:
+          You can start a conversation below or try the following examples:
         </p>
         <div className="mt-4 flex flex-col items-start space-y-2">
           {exampleMessages.map((message, index) => (
