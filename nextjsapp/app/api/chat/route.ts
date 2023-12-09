@@ -34,6 +34,13 @@ export async function POST(req: Request) {
         configuration.apiKey = previewToken
     }
 
+    // require that previewtoken is present, else return error
+    if(!previewToken) {
+        return new Response('Preview token required', {
+            status: 401
+        })
+    }
+
     let res;
     // Check if the environment is development or production
     if (process.env.NODE_ENV === 'development') {
