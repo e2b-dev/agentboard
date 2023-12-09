@@ -6,7 +6,7 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Run Python code to find the current local time in other cities',
+    heading: 'Find the current local time in Seattle',
     message: `What is the current time in Seattle?`
   },
   {
@@ -30,8 +30,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           Agentboard is an easy way to try out AI agents from the comfort of the web.
           All agents run in sandboxed Docker containers and are completely ephemeral.
         </p>
-        <p className="mb-2 leading-normal text-muted-foreground">Currently, I've implemented 
-        <ExternalLink href="https://openinterpreter.com/">Open Interpreter</ExternalLink>, with plans to
+        <p className="mb-2 leading-normal text-muted-foreground">For now, you can try <ExternalLink href="https://openinterpreter.com/"> Open Interpreter</ExternalLink>, with plans to
         expand to other AI agents such as <ExternalLink href="https://github.com/yoheinakajima/babyagi">BabyAGI</ExternalLink>
         in the future.</p> 
         <p className="leading-normal text-muted-foreground">
