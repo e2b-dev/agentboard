@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import * as agents from '@/lib/agents'
+
 
 import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
@@ -126,7 +128,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
           {messages.length ? (
             <>
-              <ChatList messages={messages} />
+              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} />
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (

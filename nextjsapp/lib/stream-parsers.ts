@@ -23,7 +23,6 @@ export function parseOpenInterpreterStream(): AIStreamParser {
         // it was urllencoded to prevent issues with the newlines and colon characters
         const formattedData = decodeURIComponent(data)
         
-        console.log(JSON.stringify(formattedData));
         return formattedData
         // const formattedData = pythonToJSFormat(data)
         // // later, add any parsing logic here
