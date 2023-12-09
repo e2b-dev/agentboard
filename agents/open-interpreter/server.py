@@ -3,6 +3,11 @@ from fastapi.responses import StreamingResponse
 import interpreter
 
 from pydantic import BaseModel
+
+import urllib.parse
+
+
+
 class ChatMessage(BaseModel):
     message: str
 
@@ -10,7 +15,7 @@ class ChatMessage(BaseModel):
 interpreter.auto_run = True
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -29,25 +34,31 @@ def chat_endpoint(chat_message: ChatMessage):
         message = chat_message.message
         def event_stream():
             for result in interpreter.chat(message, stream=True):
+                
                 if result:
-                    
-                    logger.debug(f"result: {result}")
-                    if "code" in result:
-                        yield f"data: {result['code']}\n\n"
-                    elif "message" in result:
-                        yield f"data: {result['message']}\n\n"
-                    elif "language" in result:
-                        yield f"data: {result['language']}\n\n\n"
-                    elif "output" in result:
-                        yield f"data: Output is {result['output']}\n\n\n"
-                    elif "executing" in result:
-                        yield f"data: Running...\n\n\n"
-                    elif "start_of_code" in result:
-                        yield f"data: ```\n\n"
-                    elif "end_of_code" in result:
-                        yield f"data: ```\n\n\n"
+                    # get the first key and value in separate variables
+                    key = next(iter(result))
+                    value = result[key]
+                    yieldval = ""
+
+                    if key == "code":
+                        yieldval = value
+                    elif key == "message":
+                        yieldval = value
+                    elif key == "language":
+                        yieldval = value + "\n"
+                    elif key == "output":
+                        yieldval = "\nOutput: `" + value + "`\n"
+                    elif key == "executing":
+                        yieldval = "\nRunning...\n"
+                    elif key == "start_of_code":
+                        yieldval = "\n```"
+                    elif key == "end_of_code":
+                        yieldval = "\n```\n"
                     else:
-                        yield f"data: \n\n\n"
+                        yieldval = "\n\n\n"
+                        
+                    yield f"data: {urllib.parse.quote(str(yieldval))}\n\n"
 
         return StreamingResponse(event_stream(), media_type="text/event-stream")
     except Exception as e:
