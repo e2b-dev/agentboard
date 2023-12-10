@@ -1,24 +1,28 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-import interpreter
+
+# import open interpreter locally
+from open_interpreter.interpreter import create_interpreter
+interpreter = create_interpreter()
+stopped = False
 
 from pydantic import BaseModel
 
 import urllib.parse
 
 
-
 class ChatMessage(BaseModel):
     message: str
-
 
 interpreter.auto_run = True
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+
 
 @app.get("/helloworld")
 def read_root():
@@ -30,8 +34,15 @@ def read_root():
 
 @app.post("/chat")
 def chat_endpoint(chat_message: ChatMessage):
+    global stopped
+    global interpreter
+    if stopped:
+        new_interpreter = create_interpreter()
+        new_interpreter.auto_run = True
+        interpreter = new_interpreter
     try:
         message = chat_message.message
+
         def event_stream():
             for result in interpreter.chat(message, stream=True):
                 
@@ -61,6 +72,23 @@ def chat_endpoint(chat_message: ChatMessage):
                     yield f"data: {urllib.parse.quote(str(yieldval))}\n\n"
 
         return StreamingResponse(event_stream(), media_type="text/event-stream")
+    except Exception as e:
+        logger.error(e)
+        raise
+
+@app.get("/killchat")
+def kill_chat():
+    global stopped
+    global interpreter
+    logger.info("Killing chat process")
+    interpreter.reset()
+    stopped = True
+    return {"status": "Chat process terminated"}
+
+    global should_stop
+    try:
+        should_stop[0] = True
+        return {"status": "Chat process terminated"}
     except Exception as e:
         logger.error(e)
         raise

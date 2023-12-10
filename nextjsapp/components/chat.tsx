@@ -49,7 +49,27 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         }
       }
     })
-
+    async function stopEverything() {
+      // Call the original stop function
+      stop();
+  
+      // Make a call to the /killchat API endpoint
+      try {
+          const response = await fetch('/api/kill-chat', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log(data);
+      } catch (error) {
+          console.error('Error while calling killchat:', error);
+      }
+  }
 
   useEffect(() => {
       const fetchKey = async () => {
@@ -143,7 +163,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         <ChatPanel
           id={id}
           isLoading={isLoading && previewToken != ""}
-          stop={stop}
+          stop={stopEverything}
           append={append}
           reload={reload}
           messages={messages}
