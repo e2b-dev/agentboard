@@ -13,9 +13,7 @@ export async function GET() {
     }
     
     try {
-        console.log("GET /api/get-openai-key checking KV store for key")
         const key = await kv.hgetall(`user:openai-key:${userId}`)
-        console.log('GET /api/get-openai-key key', key)
         return new Response(JSON.stringify({ key }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

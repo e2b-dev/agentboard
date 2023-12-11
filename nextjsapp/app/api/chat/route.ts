@@ -41,12 +41,7 @@ export async function POST(req: Request) {
             body: JSON.stringify({ message: latestMessage })
         })
 
-        const stream = AIStream(res, parseOpenInterpreterStream(), {
-            onToken(token){
-                console.log("onToken called")
-                console.log(token)
-            }
-        })
+        const stream = AIStream(res, parseOpenInterpreterStream())
 
         return new StreamingTextResponse(stream)
     
@@ -54,7 +49,7 @@ export async function POST(req: Request) {
 
     else {
         const sandbox = await Sandbox.reconnect(sandboxID) 
-        await sandbox.keepAlive(5 * 60 * 1000) 
+        await sandbox.keepAlive(3 * 60 * 1000) 
 
         const url = "https://" + sandbox.getHostname(8080)
 

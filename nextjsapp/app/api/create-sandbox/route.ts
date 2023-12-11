@@ -3,6 +3,8 @@ import { Sandbox }  from'@e2b/sdk'
 import { auth } from '@/auth'
 
 export async function POST(req: Request) {
+    console.log("POST /api/create-sandbox")
+
     const json = await req.json()
     const { apiKey } = json
     const userId = (await auth())?.user.id
@@ -21,7 +23,7 @@ export async function POST(req: Request) {
         cwd: '/code',
     })
 
-    await sandbox.keepAlive(5 * 60 * 1000) 
+    await sandbox.keepAlive(3 * 60 * 1000) 
     const newSandboxID = sandbox.id
 
     console.log("Waiting 1 second to let server finish starting")

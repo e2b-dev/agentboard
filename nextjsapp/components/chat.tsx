@@ -77,58 +77,57 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   
 
   useEffect(() => {
-      const fetchKey = async () => {
-        if (previewToken == ""){
-          await fetch('/api/get-openai-key', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
+    const fetchKey = async () => {
+      if (previewToken == ""){
+        await fetch('/api/get-openai-key', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.key != null) {
+              setPreviewToken(data.key)
+            }
+            else {
+              setPreviewToken("None")
             }
           })
-            .then(res => res.json())
-            .then(data => {
-              if (data.key != null) {
-                setPreviewToken(data.key)
-              }
-              else {
-                setPreviewToken("None")
-              }
-            })
-            .catch(err => {
-              console.error(err)
-            })
-        }
-      }
-      const fetchSandboxID = async () => {
-        if (sandboxID == ""){
-          await fetch('/api/create-sandbox', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ apiKey: "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" })
+          .catch(err => {
+            console.error(err)
           })
-            .then(res => res.json())
-            .then(data => {
-              if (data.sandboxID != null) {
-                setSandboxID(data.sandboxID)
-              }
-              else {
-                setSandboxID("None")
-              }
-            })
-            .catch(err => {
-              console.error(err)
-            })
-        }
       }
+    }
+    const fetchSandboxID = async () => {
+      console.log("fetching sandboxID. sandboxID: " + sandboxID)
+      if (sandboxID == ""){
+        await fetch('/api/create-sandbox', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ apiKey: "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" })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.sandboxID != null) {
+              setSandboxID(data.sandboxID)
+            }
+            else {
+              setSandboxID("None")
+            }
+          })
+          .catch(err => {
+            console.error(err)
+          })
+      }
+    }
 
-      if(!initialDataLoaded){
-        Promise.all([fetchKey(), fetchSandboxID()])
-          .then(() => setInitialDataLoaded(true))
-          .catch(err => console.error(err))
-      }
-  }, [initialDataLoaded])
+    Promise.all([fetchKey(), fetchSandboxID()])
+      .then(() => setInitialDataLoaded(true))
+      .catch(err => console.error(err))
+  }, [])
 
   const validateKey = async () => {
     setOpenAIKeySubmitButtonText("Validating...")
