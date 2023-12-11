@@ -2,9 +2,8 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
 # import open interpreter locally
-from open_interpreter.interpreter import create_interpreter
-interpreter = create_interpreter()
-stopped = False
+stopped = True
+interpreter = None
 
 from pydantic import BaseModel
 
@@ -14,15 +13,11 @@ import urllib.parse
 class ChatMessage(BaseModel):
     message: str
 
-interpreter.auto_run = True
-
 import logging
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-
-
 
 @app.get("/helloworld")
 def read_root():
@@ -32,11 +27,27 @@ def read_root():
         logger.error(e)
         raise
 
+@app.get("/chatnostream")
+def chat_endpoint_non_stream(message: str):
+    global stopped
+    global interpreter
+    if stopped:
+        from open_interpreter.interpreter import create_interpreter
+        new_interpreter = create_interpreter()
+        new_interpreter.auto_run = True
+        interpreter = new_interpreter
+    try:
+        return interpreter.chat(message)
+    except Exception as e:
+        logger.error(e)
+        raise
+
 @app.post("/chat")
 def chat_endpoint(chat_message: ChatMessage):
     global stopped
     global interpreter
     if stopped:
+        from open_interpreter.interpreter import create_interpreter
         new_interpreter = create_interpreter()
         new_interpreter.auto_run = True
         interpreter = new_interpreter
@@ -84,11 +95,3 @@ def kill_chat():
     interpreter.reset()
     stopped = True
     return {"status": "Chat process terminated"}
-
-    global should_stop
-    try:
-        should_stop[0] = True
-        return {"status": "Chat process terminated"}
-    except Exception as e:
-        logger.error(e)
-        raise

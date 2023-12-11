@@ -3,7 +3,8 @@
 e2b Docker Build Command
 
 ```
-e2b build --name "e2b-ois-image" -c "uvicorn server:app --host 0.0.0.0 --port 80"
+e2b build --name "e2b-ois-image" 
+
 ```
 
 Set OpenAI key when calling the sandbox, for example:

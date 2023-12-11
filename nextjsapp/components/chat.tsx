@@ -35,13 +35,17 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
   const [openAIKeySubmitButtonText, setOpenAIKeySubmitButtonText] = useState("Submit")
   const [validatingKey, setValidatingKey] = useState(false)
-  const { messages, append, reload, stop, isLoading, input, setInput } =
+  const [sandboxID, setSandboxID] = useState("")
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
+  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit } =
     useChat({
       initialMessages,
       id,
       body: {
         id,
-        previewToken
+        previewToken,
+        sandboxID
       },
       onResponse(response) {
         if (response.status === 401) {
@@ -49,27 +53,28 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         }
       }
     })
-    async function stopEverything() {
-      // Call the original stop function
-      stop();
-  
-      // Make a call to the /killchat API endpoint
-      try {
-          const response = await fetch('/api/kill-chat', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+  async function stopEverything() {
+    // Call the original stop function
+    stop();
+
+    // Make a call to the /killchat API endpoint
+    try {
+        const response = await fetch('/api/kill-chat', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
           }
-          const data = await response.json();
-          console.log(data);
-      } catch (error) {
-          console.error('Error while calling killchat:', error);
-      }
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.error('Error while calling killchat:', error);
+    }
   }
+  
 
   useEffect(() => {
       const fetchKey = async () => {
@@ -94,10 +99,36 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             })
         }
       }
-      fetchKey()
+      const fetchSandboxID = async () => {
+        if (sandboxID == ""){
+          await fetch('/api/create-sandbox', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ apiKey: "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" })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.sandboxID != null) {
+                setSandboxID(data.sandboxID)
+              }
+              else {
+                setSandboxID("None")
+              }
+            })
+            .catch(err => {
+              console.error(err)
+            })
+        }
+      }
 
-  }, [previewToken])
-
+      if(!initialDataLoaded){
+        Promise.all([fetchKey(), fetchSandboxID()])
+          .then(() => setInitialDataLoaded(true))
+          .catch(err => console.error(err))
+      }
+  }, [initialDataLoaded])
 
   const validateKey = async () => {
     setOpenAIKeySubmitButtonText("Validating...")
@@ -160,7 +191,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             <EmptyScreen setInput={setInput} />
           )}
         </div>
-        <ChatPanel
+        {sandboxID != "" && <ChatPanel
           id={id}
           isLoading={isLoading && previewToken != ""}
           stop={stopEverything}
@@ -169,7 +200,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           messages={messages}
           input={input}
           setInput={setInput}
-        />
+        />}
 
         {(previewToken == "None") && (
           <Dialog open={previewToken == "None"}>
