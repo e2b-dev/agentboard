@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 import urllib.parse
 
-
 class ChatMessage(BaseModel):
     message: str
 
@@ -35,6 +34,7 @@ def chat_endpoint_non_stream(message: str):
         from open_interpreter.interpreter import create_interpreter
         new_interpreter = create_interpreter()
         new_interpreter.auto_run = True
+        new_interpreter.model = "gpt-3.5-turbo"
         interpreter = new_interpreter
     try:
         return interpreter.chat(message)
@@ -50,6 +50,7 @@ def chat_endpoint(chat_message: ChatMessage):
         from open_interpreter.interpreter import create_interpreter
         new_interpreter = create_interpreter()
         new_interpreter.auto_run = True
+        new_interpreter.model = "gpt-3.5-turbo"
         interpreter = new_interpreter
     try:
         message = chat_message.message

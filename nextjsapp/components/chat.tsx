@@ -31,10 +31,10 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
-  const [previewToken, setPreviewToken] = useState("")
-  const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
-  const [openAIKeySubmitButtonText, setOpenAIKeySubmitButtonText] = useState("Submit")
-  const [validatingKey, setValidatingKey] = useState(false)
+  // const [previewToken, setPreviewToken] = useState("")
+  // const [previewTokenInput, setPreviewTokenInput] = useState(previewToken ?? '')
+  // const [openAIKeySubmitButtonText, setOpenAIKeySubmitButtonText] = useState("Submit")
+  // const [validatingKey, setValidatingKey] = useState(false)
   const [sandboxID, setSandboxID] = useState("")
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
@@ -44,7 +44,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       id,
       body: {
         id,
-        previewToken,
+        // previewToken,
         sandboxID
       },
       onResponse(response) {
@@ -77,37 +77,36 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   
 
   useEffect(() => {
-    const fetchKey = async () => {
-      if (previewToken == ""){
-        await fetch('/api/get-openai-key', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.key != null) {
-              setPreviewToken(data.key)
-            }
-            else {
-              setPreviewToken("None")
-            }
-          })
-          .catch(err => {
-            console.error(err)
-          })
-      }
-    }
+    // const fetchKey = async () => {
+    //   if (previewToken == ""){
+    //     await fetch('/api/get-openai-key', {
+    //       method: 'GET',
+    //       headers: {
+    //         'Content-Type': 'application/json'
+    //       }
+    //     })
+    //       .then(res => res.json())
+    //       .then(data => {
+    //         if (data.key != null) {
+    //           setPreviewToken(data.key)
+    //         }
+    //         else {
+    //           setPreviewToken("None")
+    //         }
+    //       })
+    //       .catch(err => {
+    //         console.error(err)
+    //       })
+    //   }
+    // }
     const fetchSandboxID = async () => {
       console.log("fetching sandboxID. sandboxID: " + sandboxID)
       if (sandboxID == ""){
         await fetch('/api/create-sandbox', {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ apiKey: "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" })
         })
           .then(res => res.json())
           .then(data => {
@@ -124,53 +123,53 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       }
     }
 
-    Promise.all([fetchKey(), fetchSandboxID()])
+    fetchSandboxID()
       .then(() => setInitialDataLoaded(true))
       .catch(err => console.error(err))
   }, [])
 
-  const validateKey = async () => {
-    setOpenAIKeySubmitButtonText("Validating...")
+  // const validateKey = async () => {
+  //   setOpenAIKeySubmitButtonText("Validating...")
 
-    try {
-      const response = await fetch('/api/validate-openai-key', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ key: previewTokenInput })
-      });
+  //   try {
+  //     const response = await fetch('/api/validate-openai-key', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ key: previewTokenInput })
+  //     });
   
-      const data = await response.json();
+  //     const data = await response.json();
   
-      if (data.valid) {
-        setOpenAIKeySubmitButtonText("Valid Key. Saving...");
+  //     if (data.valid) {
+  //       setOpenAIKeySubmitButtonText("Valid Key. Saving...");
   
-        const saveResponse = await fetch('/api/save-openai-key', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ key: previewTokenInput })
-        });
+  //       const saveResponse = await fetch('/api/save-openai-key', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json'
+  //         },
+  //         body: JSON.stringify({ key: previewTokenInput })
+  //       });
   
-        const saveData = await saveResponse.json();
+  //       const saveData = await saveResponse.json();
   
-        if (saveData.error) {
-          setOpenAIKeySubmitButtonText("Unable to save key. Try again.");
-        } else {
-          setOpenAIKeySubmitButtonText("Success!");
-          setPreviewToken(previewTokenInput);
-          setValidatingKey(false);
-        }
-      } else {
-        setOpenAIKeySubmitButtonText("Invalid Key. Try again.");
-      }
-    } catch (error) {
-      console.error(error);
-      setOpenAIKeySubmitButtonText("Error occurred. Try again.");
-    }
-  };
+  //       if (saveData.error) {
+  //         setOpenAIKeySubmitButtonText("Unable to save key. Try again.");
+  //       } else {
+  //         setOpenAIKeySubmitButtonText("Success!");
+  //         setPreviewToken(previewTokenInput);
+  //         setValidatingKey(false);
+  //       }
+  //     } else {
+  //       setOpenAIKeySubmitButtonText("Invalid Key. Try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     setOpenAIKeySubmitButtonText("Error occurred. Try again.");
+  //   }
+  // };
 
   return (
     
@@ -182,17 +181,18 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (
-            previewToken == "" ? 
-            <div className="flex flex-col justify-center items-center">
-              <p>Checking for OpenAI API key...</p>
-              <p><IconSpinner/></p>
-            </div> :
+            // previewToken == "" ? 
+            // <div className="flex flex-col justify-center items-center">
+            //   <p>Checking for OpenAI API key...</p>
+            //   <p><IconSpinner/></p>
+            // </div> :
             <EmptyScreen setInput={setInput} />
           )}
         </div>
-        {sandboxID != "" && <ChatPanel
+        {<ChatPanel
           id={id}
-          isLoading={isLoading && previewToken != ""}
+          // isLoading={isLoading && previewToken != ""}
+          isLoading={isLoading}
           stop={stopEverything}
           append={append}
           reload={reload}
@@ -201,7 +201,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           setInput={setInput}
         />}
 
-        {(previewToken == "None") && (
+        {/* {(previewToken == "None") && (
           <Dialog open={previewToken == "None"}>
               <DialogContent>
               <DialogHeader>
@@ -232,7 +232,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
               </DialogFooter>
               </DialogContent>
           </Dialog>)
-        }
+        } */}
       </>
   )
 }

@@ -7,7 +7,8 @@ export const runtime = 'edge'
 
 export async function POST(req: Request) {
     const json = await req.json()
-    const { messages, previewToken, sandboxID } = json
+    // const { messages, previewToken, sandboxID } = json
+    const { messages, sandboxID } = json
 
     let latestMessage = messages[messages.length - 1].content
 
@@ -18,11 +19,11 @@ export async function POST(req: Request) {
         })
     }
 
-    if(!previewToken) {
-        return new Response('Preview token required', {
-            status: 401
-        })
-    }
+    // if(!previewToken) {
+    //     return new Response('Preview token required', {
+    //         status: 401
+    //     })
+    // }
     
     if(!sandboxID) {
         return new Response('Sandbox ID required', {
@@ -30,8 +31,7 @@ export async function POST(req: Request) {
         })
     }
 
-    // if (process.env.NODE_ENV === 'development') {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.DOCKER === 'local') {
         // call local docker container
         const res = await fetch('http://localhost:8080/chat', {
             method: 'POST',

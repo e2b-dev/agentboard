@@ -2,17 +2,16 @@
 import { Sandbox }  from'@e2b/sdk'
 import { auth } from '@/auth'
 
-export async function POST(req: Request) {
+export async function GET() {
     console.log("POST /api/create-sandbox")
-
-    const json = await req.json()
-    const { apiKey } = json
     const userId = (await auth())?.user.id
     if (!userId) {
         return new Response('Unauthorized', {
             status: 401
         })
     }
+
+    const apiKey = process.env.OPENAI_API_KEY 
     
     const sandbox = await Sandbox.create({ 
         template: 'e2b-ois-image',
