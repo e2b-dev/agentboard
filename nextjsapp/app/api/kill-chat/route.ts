@@ -22,20 +22,6 @@ export async function POST(req: Request) {
                     'Content-Type': 'application/json'
                 },
             })
-            // print response
-           
-            const data = await res.json()
-            if (data.status === "Chat process terminated") {
-                return new Response('Chat process terminated', {
-                    status: 200
-                })
-            }
-            else{
-                console.log(data)
-                return new Response('Unexpected error when calling /killchat', {
-                    status: 500
-                })
-            }
 
         }
         catch (e) {
@@ -60,16 +46,13 @@ export async function POST(req: Request) {
 
             const url = "https://" + sandbox.getHostname(8080)
             console.log("/api/kill-chat fetching url: " + url + "/killchat")
-            const res = await fetch(url + '/killchat', {
+            res = await fetch(url + '/killchat', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 },
             })
 
-            // if response successful, return response
-            return res
-            
         }
         catch (e) {
             console.log(e)
@@ -78,6 +61,18 @@ export async function POST(req: Request) {
             })
         }
 
+    }
+    const data = await res.json()
+    if (data.status === "Chat process terminated") {
+        return new Response('Chat process terminated', {
+            status: 200
+        })
+    }
+    else{
+        console.log(data)
+        return new Response('Unexpected error when calling /killchat', {
+            status: 500
+        })
     }
 
 }
