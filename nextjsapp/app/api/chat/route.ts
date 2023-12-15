@@ -20,12 +20,6 @@ export async function POST(req: Request) {
         })
     }
 
-    // if(!previewToken) {
-    //     return new Response('Preview token required', {
-    //         status: 401
-    //     })
-    // }
-    
     // Sandbox not required for local development
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
         if(!sandboxID) {

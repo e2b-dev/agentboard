@@ -3,7 +3,6 @@ import { Sandbox }  from'@e2b/sdk'
 import { auth } from '@/auth'
 
 export async function GET() {
-    console.log("POST /api/create-sandbox")
     if(process.env.DOCKER == 'local'){
         // no need for sandbox, just return local
         return new Response(JSON.stringify("not creating sandbox"), {

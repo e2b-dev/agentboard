@@ -15,7 +15,12 @@ export const {
   auth,
   CSRF_experimental // will be removed in future
 } = NextAuth({
-  providers: [GitHub],
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+    })
+  ],
   callbacks: {
     jwt({ token, profile }) {
       if (profile) {
@@ -26,7 +31,7 @@ export const {
     },
     authorized({ auth }) {
       return !!auth?.user // this ensures there is a logged in user for -every- request
-    }
+    },
   },
   pages: {
     signIn: '/sign-in' // overrides the next-auth default signin page https://authjs.dev/guides/basics/pages
