@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
         if(!sandboxID) {
             return new Response('Sandbox ID required', {
-                status: 401
+                status: 400
             })
         }
     }
@@ -46,26 +46,34 @@ export async function POST(req: Request) {
     }
 
     else {
-        const sandbox = await Sandbox.reconnect(sandboxID) 
-        await sandbox.keepAlive(3 * 60 * 1000) 
+        try {
+            const sandbox = await Sandbox.reconnect(sandboxID) 
+            await sandbox.keepAlive(3 * 60 * 1000) 
 
-        const url = "https://" + sandbox.getHostname(8080)
+            const url = "https://" + sandbox.getHostname(8080)
 
-        const res = await fetch(url + '/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: latestMessage })
-        })
-        
-        const stream = AIStream(res, parseOpenInterpreterStream(), {
-            async onFinal(completion){
-                await sandbox.close()
-            },
-        })
+            const res = await fetch(url + '/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: latestMessage })
+            })
+            
+            const stream = AIStream(res, parseOpenInterpreterStream(), {
+                async onFinal(completion){
+                    await sandbox.close()
+                },
+            })
 
-        return new StreamingTextResponse(stream)
+            return new StreamingTextResponse(stream)
+        }
+        catch (e) {
+            console.log(e)
+            return new Response('Sandbox not found, this is error', {
+                status: 500
+            })
+        }
 
     }
 

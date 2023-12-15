@@ -54,7 +54,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
     } catch (error) {
         console.error('Error while calling killchat:', error);
     }
@@ -64,7 +63,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   useEffect(() => {
     
     const fetchSandboxID = async () => {
-      console.log("fetching sandboxID. sandboxID: " + sandboxID)
       if (sandboxID == ""){
         await fetch('/api/create-sandbox', {
           method: 'GET',
@@ -76,7 +74,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           .then(data => {
             if (data.sandboxID != null) {
               setSandboxID(data.sandboxID)
-              console.log("sandboxID set to: " + data.sandboxID)
             }
             else {
               setSandboxID("None")
