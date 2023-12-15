@@ -6,6 +6,7 @@ import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
+    let startTime = Date.now()
     const json = await req.json()
     // const { messages, previewToken, sandboxID } = json
     const { messages, sandboxID } = json
@@ -19,6 +20,8 @@ export async function POST(req: Request) {
             status: 401
         })
     }
+    let endTime = Date.now()
+    console.log("Time to authenticate user: " + (endTime - startTime) + "ms")
 
     // Sandbox not required for local development
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
@@ -38,6 +41,8 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({ message: latestMessage })
         })
+        endTime = Date.now()
+        console.log("Time to get response from local docker container: " + (endTime - startTime) + "ms")
 
         const stream = AIStream(res, parseOpenInterpreterStream())
 
@@ -59,6 +64,8 @@ export async function POST(req: Request) {
                 },
                 body: JSON.stringify({ message: latestMessage })
             })
+            endTime = Date.now()
+            console.log("Time to get response from remote docker container: " + (endTime - startTime) + "ms")
             
             const stream = AIStream(res, parseOpenInterpreterStream(), {
                 async onFinal(completion){

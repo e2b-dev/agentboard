@@ -13,6 +13,8 @@ export function ChatList({ messages, agentType }: ChatList) {
     return null
   }
 
+  console.log("ChatList messages length:", messages.length)
+
   return (
     <div className="relative mx-auto max-w-2xl px-4">
       {messages.map((message, index) => (

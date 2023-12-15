@@ -20,6 +20,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 export function Chat({ id, initialMessages, className }: ChatProps) {
   
   const [sandboxID, setSandboxID] = useState("")
+  const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
 
   const { messages, reload, stop, isLoading, input, setInput, handleSubmit } =
     useChat({
@@ -88,13 +89,29 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       .catch(err => console.error(err))
   }, [])
 
-  
-  console.log("messages.length: " + messages.length)
+  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!firstMessageSubmitted) {
+      setFirstMessageSubmitted(true)
+
+      // wait for sandboxID to populate
+      while(true) {
+        if(sandboxID != "") break
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    if (!input?.trim()) {
+      return
+    }
+    setInput('')
+    await handleSubmit(e)
+  }
+
   return (
 
       <>
         <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
-          {messages.length ? (
+          {firstMessageSubmitted ? (
             <>
               <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} />
               <ChatScrollAnchor trackVisibility={isLoading} />
@@ -111,7 +128,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           messages={messages}
           input={input}
           setInput={setInput}
-          handleSubmit={handleSubmit}
+          handleSubmit={handleMessageSubmit}
         />}
       </>
   )

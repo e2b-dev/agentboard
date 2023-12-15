@@ -5,7 +5,7 @@ import { auth } from '@/auth'
 export async function GET() {
     if(process.env.DOCKER == 'local'){
         // no need for sandbox, just return local
-        return new Response(JSON.stringify("not creating sandbox"), {
+        return new Response(JSON.stringify({sandboxID: "dummy-sandbox-id-to-make-it-work"}), {
             headers: {
                 'Content-Type': 'application/json'
             }
