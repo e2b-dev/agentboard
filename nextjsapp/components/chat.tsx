@@ -10,8 +10,6 @@ import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
 
 import { useState, useEffect } from 'react'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
 import { toast } from 'react-hot-toast'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
@@ -22,9 +20,8 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 export function Chat({ id, initialMessages, className }: ChatProps) {
   
   const [sandboxID, setSandboxID] = useState("")
-  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
-  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit } =
+  const { messages, reload, stop, isLoading, input, setInput, handleSubmit } =
     useChat({
       initialMessages,
       id,
@@ -92,9 +89,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   }, [])
 
   
-
+  console.log("messages.length: " + messages.length)
   return (
-    
+
       <>
         <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
           {messages.length ? (
@@ -110,11 +107,11 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           id={id}
           isLoading={isLoading}
           stop={stopEverything}
-          append={append}
           reload={reload}
           messages={messages}
           input={input}
           setInput={setInput}
+          handleSubmit={handleSubmit}
         />}
       </>
   )

@@ -14,13 +14,13 @@ import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
 export interface PromptProps
-  extends Pick<UseChatHelpers, 'input' | 'setInput'> {
-  onSubmit: (value: string) => Promise<void>
+  extends Pick<UseChatHelpers, 'input' | 'setInput' | 'handleSubmit'> {
+  // onSubmit: (value: string) => Promise<void>
   isLoading: boolean
 }
 
 export function PromptForm({
-  onSubmit,
+  handleSubmit,
   input,
   setInput,
   isLoading
@@ -43,7 +43,7 @@ export function PromptForm({
           return
         }
         setInput('')
-        await onSubmit(input)
+        await handleSubmit(e)
       }}
       ref={formRef}
     >
