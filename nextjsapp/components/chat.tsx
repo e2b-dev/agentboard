@@ -51,12 +51,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           },
           body: JSON.stringify({sandboxID: sandboxID})
         })
+        const data = await response.text();
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.status != 200) {
-          throw new Error(`API error! status: ${data.status}`);
+            throw new Error(`HTTP error! status: ${data}`);
         }
     } catch (error) {
         console.error('Error while calling killchat:', error);

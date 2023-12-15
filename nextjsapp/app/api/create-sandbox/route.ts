@@ -25,6 +25,7 @@ export async function GET() {
         sandbox = await Sandbox.create({ 
             template: 'e2b-ois-image-dev',
         })
+        console.log("/api/create-sandbox sandbox id: " + sandbox.id)
     }
     else {
         sandbox = await Sandbox.create({ 
@@ -37,14 +38,13 @@ export async function GET() {
     })
 
     await sandbox.keepAlive(3 * 60 * 1000) 
-    const newSandboxID = sandbox.id
 
     console.log("Waiting 1 second to let server finish starting")
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     await sandbox.close()
 
-    return new Response(JSON.stringify({ sandboxID: newSandboxID }), {
+    return new Response(JSON.stringify({ sandboxID: sandbox.id }), {
         headers: {
             'Content-Type': 'application/json'
         }
