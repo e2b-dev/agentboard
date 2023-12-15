@@ -8,7 +8,6 @@ export const runtime = 'edge'
 export async function POST(req: Request) {
     let startTime = Date.now()
     const json = await req.json()
-    // const { messages, previewToken, sandboxID } = json
     const { messages, sandboxID } = json
 
     let latestMessage = messages[messages.length - 1].content

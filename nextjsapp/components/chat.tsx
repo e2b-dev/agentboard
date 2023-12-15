@@ -8,6 +8,7 @@ import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
+import { IconSpinner } from './ui/icons'
 
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
@@ -16,11 +17,15 @@ export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
 }
+interface SandboxData {
+  sandboxID: string;
+}
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
   
   const [sandboxID, setSandboxID] = useState("")
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
+  const [receivedSandboxID, setReceivedSandboxID] = useState(false)
 
   const { messages, reload, stop, isLoading, input, setInput, handleSubmit } =
     useChat({
@@ -71,12 +76,12 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         })
           .then(res => res.json())
           .then(data => {
-            if (data.sandboxID != null) {
-              setSandboxID(data.sandboxID)
-            }
-            else {
-              setSandboxID("None")
-            }
+            return new Promise(resolve => setTimeout(() => resolve(data), 5000));
+          })
+          .then((data: unknown) => {
+            const sandboxData = data as SandboxData
+            setSandboxID(sandboxData.sandboxID)
+            setReceivedSandboxID(true)
           })
           .catch(err => {
             console.error(err)
@@ -85,19 +90,20 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     }
 
     // Sandbox not required for local development
-    fetchSandboxID()
-      .catch(err => console.error(err))
-  }, [])
+    if(sandboxID == ""){
+      fetchSandboxID()
+        .catch(err => console.error(err))
+    }
+  }, [sandboxID])
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
     if (!firstMessageSubmitted) {
+      e.preventDefault()
       setFirstMessageSubmitted(true)
 
       // wait for sandboxID to populate
       while(true) {
         if(sandboxID != "") break
-        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     if (!input?.trim()) {
@@ -117,6 +123,11 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (
+            !receivedSandboxID ? 
+              <div className="flex flex-col justify-center items-center">
+               <p>Starting up sandbox... (takes up to 15s)</p>
+               <p><IconSpinner/></p>
+             </div> :
             <EmptyScreen setInput={setInput} />
           )}
         </div>
