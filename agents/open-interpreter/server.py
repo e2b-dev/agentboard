@@ -8,12 +8,17 @@ time.sleep(2)
 
 import interpreter
 
-interpreter.auto_run = True
-interpreter.model = "gpt-3.5-turbo"
+
 
 from pydantic import BaseModel
 
 import urllib.parse
+
+def setup_interpreter(interpreter):
+    interpreter.auto_run = True
+    interpreter.model = "gpt-3.5-turbo"
+
+setup_interpreter(interpreter)
 
 class ChatMessage(BaseModel):
     message: str
@@ -85,4 +90,5 @@ def kill_chat():
     global interpreter
     logger.info("Killing chat process")
     interpreter.reset()
+    setup_interpreter(interpreter)
     return {"status": "Chat process terminated"}

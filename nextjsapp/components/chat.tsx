@@ -45,15 +45,19 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     // Make a call to the /killchat API endpoint
     try {
         const response = await fetch('/api/kill-chat', {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify({sandboxID: sandboxID})
         })
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        if (data.status != 200) {
+          throw new Error(`API error! status: ${data.status}`);
+        }
     } catch (error) {
         console.error('Error while calling killchat:', error);
     }
