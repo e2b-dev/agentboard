@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
-# import open interpreter locally
-stopped = True
-interpreter = None
+# Why are we pausing for two seconds? Because E2B containers take a while to open up their internet connections,
+# and the subsequent imports will fail since they require internet access.
+import time
+time.sleep(2)
+
+import interpreter
+
+interpreter.auto_run = True
+interpreter.model = "gpt-3.5-turbo"
 
 from pydantic import BaseModel
 
@@ -28,14 +34,7 @@ def read_root():
 
 @app.get("/chatnostream")
 def chat_endpoint_non_stream(message: str):
-    global stopped
     global interpreter
-    if stopped:
-        from open_interpreter.interpreter import create_interpreter
-        new_interpreter = create_interpreter()
-        new_interpreter.auto_run = True
-        new_interpreter.model = "gpt-3.5-turbo"
-        interpreter = new_interpreter
     try:
         return interpreter.chat(message)
     except Exception as e:
@@ -44,14 +43,7 @@ def chat_endpoint_non_stream(message: str):
 
 @app.post("/chat")
 def chat_endpoint(chat_message: ChatMessage):
-    global stopped
     global interpreter
-    if stopped:
-        from open_interpreter.interpreter import create_interpreter
-        new_interpreter = create_interpreter()
-        new_interpreter.auto_run = True
-        new_interpreter.model = "gpt-3.5-turbo"
-        interpreter = new_interpreter
     try:
         message = chat_message.message
 
@@ -90,9 +82,7 @@ def chat_endpoint(chat_message: ChatMessage):
 
 @app.get("/killchat")
 def kill_chat():
-    global stopped
     global interpreter
     logger.info("Killing chat process")
     interpreter.reset()
-    stopped = True
     return {"status": "Chat process terminated"}

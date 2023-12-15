@@ -1,25 +1,4 @@
-# E2B Workflow
-
-e2b Docker Build Command
-
-```
-e2b build --name "e2b-ois-image" 
-
-```
-
-Set OpenAI key when calling the sandbox, for example:
-
-```
-import { Sandbox } from '@e2b/sdk'
-
-const sandbox = await Sandbox.create({
-  template: 'base',
-  envVars: {FOO: 'Hello'}, 
-})
-
-await sandbox.close()
-```
-
+===================================================================
 # Local Workflow
 
 Local Docker Build & Run command
@@ -27,7 +6,7 @@ Local Docker Build & Run command
 ```
 docker build -t ois-image . && \
 docker rm -f ois-container && \
-docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=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 ois-image
+docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=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 ois-image
 ```
 
 Local Docker Exec command
@@ -40,8 +19,39 @@ Local Docker Logs command
 ```
 docker logs $(docker ps -qf "name=ois-container")
 ```
+======================================================================
+# Local E2B Workflow
 
-# Todos:
-1. Implement a web socket interactive interface so the user can check code runs instead of auto_run
-2. Implement frontend that's web optimized for open interpreter - code blocks, active blocks, etc 
-3. Include the open interpreter package locally in this directory vs pulling from remote every time I build the docker image which could break the app later.
+e2b Docker Build Command
+
+```
+cp local.e2b.toml e2b.toml && e2b build
+
+```
+
+Open a shell with the docker image to verify it's started
+```
+e2b shell
+```
+
+Get in there and start the uvicorn process
+```
+cd /code
+OPENAI_API_KEY=<key> uvicorn server:app --host 0.0.0.0 --port 8080 &
+```
+
+Commands to check if anything went wrong
+```
+pgrep uvicorn
+journalctl -u start_cmd.service
+```
+
+========================================================================
+# Production E2B Workflow
+
+e2b Docker Build Command
+
+```
+cp prod.e2b.toml e2b.toml && e2b build
+
+```

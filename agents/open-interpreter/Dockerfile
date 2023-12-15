@@ -4,8 +4,6 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-COPY ./open_interpreter /code/open_interpreter
-
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./server.py /code/server.py

@@ -14,6 +14,7 @@ export async function POST(req: Request) {
 
     const userId = (await auth())?.user.id
     if (!userId) {
+        console.log("User not authenticated")
         return new Response('Unauthorized', {
             status: 401
         })
@@ -25,10 +26,13 @@ export async function POST(req: Request) {
     //     })
     // }
     
-    if(!sandboxID) {
-        return new Response('Sandbox ID required', {
-            status: 401
-        })
+    // Sandbox not required for local development
+    if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
+        if(!sandboxID) {
+            return new Response('Sandbox ID required', {
+                status: 401
+            })
+        }
     }
 
     if (process.env.DOCKER === 'local') {

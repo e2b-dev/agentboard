@@ -4,6 +4,14 @@ import { auth } from '@/auth'
 
 export async function GET() {
     console.log("POST /api/create-sandbox")
+    if(process.env.DOCKER == 'local'){
+        // no need for sandbox, just return local
+        return new Response(JSON.stringify("not creating sandbox"), {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+    }
     const userId = (await auth())?.user.id
     if (!userId) {
         return new Response('Unauthorized', {
@@ -13,10 +21,17 @@ export async function GET() {
 
     const apiKey = process.env.OPENAI_API_KEY 
     
-    const sandbox = await Sandbox.create({ 
-        template: 'e2b-ois-image',
-    })
-
+    let sandbox
+    if (process.env.NODE_ENV === 'development') {
+        sandbox = await Sandbox.create({ 
+            template: 'e2b-ois-image-dev',
+        })
+    }
+    else {
+        sandbox = await Sandbox.create({ 
+            template: 'e2b-ois-image',
+        })
+    }
     await sandbox.process.start({
         cmd: `OPENAI_API_KEY=${apiKey} uvicorn server:app --host 0.0.0.0 --port 8080`,
         cwd: '/code',
