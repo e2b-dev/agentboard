@@ -1,8 +1,12 @@
 import React from 'react';
+import Head from 'next/head'
 
 export default function PrivacyPolicyPage () {
     return (
         <div>
+            <Head>
+                <meta name="robots" content="noindex"/>
+            </Head>
             <h1>Privacy Policy</h1>
             <p>Last updated: December 18, 2023</p>
             <p>This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
