@@ -5086,10 +5086,10 @@ export default function TermsOfService() {
         To expedite resolution and control the cost of any dispute, controversy,
         or claim related to these Legal Terms (each a{" "}
         <bdt className="block-component" />
-        "Dispute&quot; and collectively, the &quot;Disputes&quot;
+        &quot;Dispute&quot; and collectively, the &quot;Disputes&quot;
         <bdt className="statement-end-if-in-editor" />) brought by either you or
         us (individually, a <bdt className="block-component" />
-        "Party&quot; and collectively, the &quot;Parties&quot;
+        &quot;Party&quot; and collectively, the &quot;Parties&quot;
         <bdt className="statement-end-if-in-editor" />
         ), the Parties agree to first attempt to negotiate any Dispute (except
         those Disputes expressly provided below) informally for at least{" "}
