@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const userId = (await auth())?.user.id
+    const userId = (await auth())?.user
     if (!userId) {
         console.log("User not authenticated")
         return new Response('Unauthorized', {

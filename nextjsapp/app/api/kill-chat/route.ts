@@ -4,7 +4,7 @@ import { Sandbox } from '@e2b/sdk'
 
 export async function POST(req: Request) {
 
-    const userId = (await auth())?.user.id
+    const userId = (await auth())?.user
     if (!userId) {
         return new Response('Unauthorized', {
             status: 401

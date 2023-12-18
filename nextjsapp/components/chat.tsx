@@ -74,7 +74,10 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             'Content-Type': 'application/json'
           },
         })
-          .then(res => res.json())
+          .then(res => {
+            if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json()
+          })
           .then(data => {
             return new Promise(resolve => setTimeout(() => resolve(data), 5000));
           })

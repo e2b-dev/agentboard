@@ -11,9 +11,9 @@ export async function GET() {
             }
         })
     }
-    const userId = (await auth())?.user.id
+    const userId = (await auth())?.user
     if (!userId) {
-        return new Response('Unauthorized', {
+        return new Response(JSON.stringify({error: 'Unauthorized'}), {
             status: 401
         })
     }

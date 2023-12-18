@@ -21,12 +21,15 @@ export const {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET
   })],
   callbacks: {
-    jwt({ token, profile }) {
-      if (profile) {
-        token.id = profile.id
-        token.image = profile.avatar_url || profile.picture
+    jwt({ token, account, profile }) {
+      if (account?.provider === 'github') {
+        token.id = profile ? profile.id : token.id;
+        token.image = profile ? (profile.avatar_url || profile.picture) : token.image;
+      } else if (account?.provider === 'google') {
+        token.id = profile ? profile.id : token.id;
+        token.image = profile ? (profile.avatar_url || profile.picture) : token.image;
       }
-      return token
+      return token;
     },
     authorized({ auth }) {
       return !!auth?.user // this ensures there is a logged in user for -every- request
