@@ -7,10 +7,6 @@ export default function TermsOfService() {
         <Head>
                 <meta name="robots" content="noindex"/>
             </Head>
-  <div className="awesome" style={{ border: "1px solid red" }}>
-    <label htmlFor="name">Enter your name: </label>
-    <input type="text" id="name" />
-  </div>
   <p>
     <style
       dangerouslySetInnerHTML={{
