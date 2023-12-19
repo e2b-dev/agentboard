@@ -24,6 +24,7 @@ function getUserInitials(name: string) {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
+  console.log("UserMenu: user", user)
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>
@@ -32,7 +33,7 @@ export function UserMenu({ user }: UserMenuProps) {
             {user?.image ? (
               <Image
                 className="w-6 h-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
-                src={user?.image ? `${user.image}&s=60` : 'https://www.gravatar.com/avatar'}
+                src={user?.image ? `${user.image}` : 'https://www.gravatar.com/avatar'}
                 alt={user.name ?? 'Avatar'}
                 height={48} width={48}
               />
