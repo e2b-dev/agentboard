@@ -54,9 +54,11 @@ export async function Header() {
         </div>
       </div>
       <div className="flex items-center justify-center w-1/3">
+        <span>using {' '}
         <ExternalLink href="https://openinterpreter.com/">
           <span className="text-center" style={{ fontFamily: 'system-ui' }}> Open Interpreter Project</span>
         </ExternalLink>
+      </span>
       </div>
       <div className="flex items-center justify-end w-1/3"></div>
       {/* <div className="flex items-center justify-end space-x-2">
