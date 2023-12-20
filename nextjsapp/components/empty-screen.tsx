@@ -10,8 +10,8 @@ const exampleMessages = [
     message: `What is the current time in Seattle?`
   },
   {
-    heading: 'Summarize a Paul Graham article and write it to a file',
-    message: 'Extract info from this webpage http://www.paulgraham.com/hs.html, then generate a summary for it and write it to a .txt. file. \n'
+    heading: 'Download and summarize a Youtube video',
+    message: 'Download the latest Andrej Karpathy YouTube video and summarize the transcript using OpenAI for me. \n'
   },
   {
     heading: 'List all of the files in a directory',
