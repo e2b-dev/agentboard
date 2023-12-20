@@ -3,7 +3,7 @@ import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import { Button, buttonVariants } from '@/components/ui/button'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import { IconArrowElbow, IconPlus, IconUpload } from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
@@ -54,7 +54,7 @@ export function PromptForm({
                 'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
               )}
             >
-              <IconPlus />
+              <IconUpload />
               <span className="sr-only">New Chat</span>
             </button>
           </TooltipTrigger>
