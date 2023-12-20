@@ -4,12 +4,6 @@ import { auth } from '@/auth'
 import { Readable, Writable, pipeline } from 'stream';
 import { promisify } from 'util';
 
-export const config = {
-    api: {
-      bodyParser: false, // Disabling Next.js's body parser as we will handle it
-    },
-  };
-
 export async function POST(req: Request, res: Response) {
     const userId = (await auth())?.user
     if (!userId) {
