@@ -114,9 +114,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           setUploadingFileName("")
           return response.json();
         })
-        .then(data => {
-          console.log(data);
-        })
         .catch(error => {
           console.error('Error:', error);
           setFileUploading(false)
@@ -161,7 +158,6 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   useEffect(() => {
     const executePendingSubmitEvent = () => {
       if(receivedSandboxID && pendingInputValue){
-        console.log('submitting pending event')
         setInput('')
         append({
           id,

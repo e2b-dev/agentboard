@@ -8,6 +8,9 @@ export async function POST(req: Request, res: Response) {
     const userId = (await auth())?.user
     if (!userId) {
         console.log("User not authenticated")
+        return new Response('Unauthorized', {
+            status: 401
+        })
     }
     if (process.env.DOCKER === 'local') {
         console.log("/upload-file not implemented for local docker container")
