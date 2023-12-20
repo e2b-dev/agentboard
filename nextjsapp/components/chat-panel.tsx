@@ -17,7 +17,9 @@ export interface ChatPanelProps
     | 'setInput'
     | 'handleSubmit'
   > {
-  id?: string
+    fileUploadOnChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    fileUploading: boolean
+    id?: string
 }
 
 export function ChatPanel({
@@ -28,7 +30,9 @@ export function ChatPanel({
   input,
   setInput,
   messages,
-  handleSubmit
+  handleSubmit,
+  fileUploadOnChange,
+  fileUploading
 }: ChatPanelProps) {
   return (
     <div className="fixed inset-x-0 bottom-0 bg-gradient-to-b from-muted/10 from-10% to-muted/30 to-50%">
@@ -63,6 +67,8 @@ export function ChatPanel({
             input={input}
             setInput={setInput}
             isLoading={isLoading}
+            fileUploadOnChange={fileUploadOnChange}
+            fileUploading={fileUploading}
           />
         </div>
       </div>
