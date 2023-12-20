@@ -22,7 +22,6 @@ export const {
   })],
   callbacks: {
     jwt({ token, account, profile }) {
-      console.log('jwt callback: ', token, account, profile)
       if (account?.provider === 'github') {
         token.id = profile ? profile.id : token.id;
         token.image = profile ? (profile.avatar_url || profile.picture) : token.image;

@@ -26,8 +26,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const [sandboxID, setSandboxID] = useState("")
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
   const [receivedSandboxID, setReceivedSandboxID] = useState(false)
+  const [pendingInputValue, setPendingInputValue] = useState<string | null>(null);
 
-  const { messages, reload, stop, isLoading, input, setInput, handleSubmit } =
+  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit } =
     useChat({
       initialMessages,
       id,
@@ -41,6 +42,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         }
       }
     })
+
   async function stopEverything() {
     // Call the original stop function
     stop();
@@ -74,64 +76,82 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             'Content-Type': 'application/json'
           },
         })
-          .then(res => {
-            if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            return res.json()
-          })
-          .then(data => {
-            return new Promise(resolve => setTimeout(() => resolve(data), 5000));
-          })
-          .then((data: unknown) => {
-            const sandboxData = data as SandboxData
-            setSandboxID(sandboxData.sandboxID)
-            setReceivedSandboxID(true)
-          })
-          .catch(err => {
-            console.error(err)
-          })
+        .then(res => {
+          if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json()
+        })
+        .then(data => {
+          return new Promise(resolve => setTimeout(() => resolve(data), 5000));
+        })
+        .then((data: unknown) => {
+          const sandboxData = data as SandboxData
+          setSandboxID(sandboxData.sandboxID)
+          setTimeout(() => setReceivedSandboxID(true), 3000)
+        })
+        .catch(err => {
+          console.error(err)
+        })
       }
     }
 
-    // Sandbox not required for local development
     if(sandboxID == ""){
       fetchSandboxID()
         .catch(err => console.error(err))
     }
   }, [sandboxID])
 
-  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    if (!firstMessageSubmitted) {
-      e.preventDefault()
-      setFirstMessageSubmitted(true)
-
-      // wait for sandboxID to populate
-      while(true) {
-        if(sandboxID != "") break
+  useEffect(() => {
+    const executePendingSubmitEvent = () => {
+      if(receivedSandboxID && pendingInputValue){
+        console.log('submitting pending event')
+        setInput('')
+        append({
+          id,
+          content: pendingInputValue,
+          role: 'user'
+        })
+        setPendingInputValue(null)
       }
     }
+    executePendingSubmitEvent()
+  }, [receivedSandboxID, pendingInputValue])
+
+  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     if (!input?.trim()) {
       return
     }
-    setInput('')
-    await handleSubmit(e)
-  }
+    if (!firstMessageSubmitted) {
+      setFirstMessageSubmitted(true)
+    }
 
+    if(receivedSandboxID){
+      handleSubmit(e)
+    }
+    else{
+      setPendingInputValue(input)
+    }
+    
+  }
   return (
 
       <>
         <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
           {firstMessageSubmitted ? (
+            !receivedSandboxID ? 
+                <>
+                <div className="flex flex-col justify-center items-center">
+                  <p>Finishing sandbox bootup... </p>
+                  <p><IconSpinner/></p>
+                </div> 
+                </>
+                :
             <>
               <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} />
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (
-            !receivedSandboxID ? 
-              <div className="flex flex-col justify-center items-center">
-               <p>Starting up sandbox... (takes up to 15s)</p>
-               <p><IconSpinner/></p>
-             </div> :
-            <EmptyScreen setInput={setInput} />
+              <EmptyScreen setInput={setInput} />
           )}
         </div>
         {<ChatPanel

@@ -26,18 +26,20 @@ export async function GET() {
             template: 'e2b-ois-image-dev',
         })
         console.log("/api/create-sandbox sandbox id: " + sandbox.id)
+        await sandbox.keepAlive(1 * 60 * 1000) 
     }
     else {
         sandbox = await Sandbox.create({ 
             template: 'e2b-ois-image',
         })
+        await sandbox.keepAlive(3 * 60 * 1000) 
     }
+
     await sandbox.process.start({
-        cmd: `OPENAI_API_KEY=${apiKey} uvicorn server:app --host 0.0.0.0 --port 8080`,
+        cmd: `OPENAI_API_KEY=${apiKey} uvicorn server:app --host 0.0.0.0 --port 8080 && chmod 700 server.py`,
         cwd: '/code',
     })
 
-    await sandbox.keepAlive(3 * 60 * 1000) 
 
     console.log("Waiting 1 second to let server finish starting")
     await new Promise(resolve => setTimeout(resolve, 1000));
