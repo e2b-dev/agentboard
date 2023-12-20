@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 
 import { cn } from '@/lib/utils'
@@ -8,10 +10,11 @@ import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
-import { IconSpinner } from './ui/icons'
 
-import { useState, useEffect } from 'react'
-import { toast } from 'react-hot-toast'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { IconSpinner, IconFeedback } from '@/components/ui/icons'
+import { Input } from '@/components/ui/input'
+import { Button, buttonVariants } from '@/components/ui/button'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -29,6 +32,9 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const [pendingInputValue, setPendingInputValue] = useState<string | null>(null);
   const [fileUploading, setFileUploading] = useState(false)
   const [uploadingFileName, setUploadingFileName] = useState("")
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [feedbackText, setFeedbackText] = useState("")
+  const [sendingFeedback, setSendingFeedback] = useState(false)
 
   const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } =
     useChat({
@@ -224,6 +230,55 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
           fileUploadOnChange={fileUploadOnChange}
           fileUploading={fileUploading}
         />
+        
+        <button 
+          className='absolute bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800'
+          onClick={() => setFeedbackDialogOpen(true)}
+        >
+          <IconFeedback className="w-5 h-5"/>
+        </button>
+        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Feedback Form</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              Please describe the issue you are experiencing:
+            </DialogDescription>
+            <Input
+                  value={feedbackText}
+                  placeholder="Write feedback here"
+                  onChange={e => setFeedbackText(e.target.value)}
+              />
+              <Button
+                className="px-4 py-2 mt-2 rounded-md w-full sm:max-w-1/3"
+                onClick={() => {
+                  setSendingFeedback(true)
+                  fetch('/api/send-feedback', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ feedback: feedbackText }),
+                  })
+                  .then((response) => {
+                    if(!response.ok) {
+                      throw new Error('Failed to send feedback - refresh the page and try again later')
+                    }
+                    setFeedbackDialogOpen(false)
+                    setFeedbackText("")
+                  })
+                  .catch(err => {
+                    setFeedbackText(err.message)
+                    console.error(err)
+                  })
+                  .finally(() => {
+                    setSendingFeedback(false)
+                  })
+                }}
+              >
+                {sendingFeedback ? <IconSpinner/> :"Submit"}
+              </Button>
+          </DialogContent>
+        </Dialog>
       </>
   )
 }
