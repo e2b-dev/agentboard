@@ -8,7 +8,6 @@ import { nanoid } from 'nanoid'
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
-    let startTime = Date.now()
     const json = await req.json()
     const { messages, sandboxID } = json
 
@@ -39,7 +38,10 @@ export async function POST(req: Request) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: latestMessage })
+            body: JSON.stringify({ 
+                chat_message: {message: latestMessage},
+                openai_api_key: { apiKey: process.env.OPENAI_API_KEY }
+            })
         })
         endTime = Date.now()
 
@@ -61,10 +63,12 @@ export async function POST(req: Request) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: latestMessage })
+                body: JSON.stringify({ 
+                    chat_message: {message: latestMessage},
+                    openai_api_key: { apiKey: process.env.OPENAI_API_KEY }
+                })
             })
             endTime = Date.now()
-            console.log("Time to get response from remote docker container: " + (endTime - startTime) + "ms")
             
             const stream = AIStream(res, parseOpenInterpreterStream(), {
                 async onFinal(completion){
