@@ -33,7 +33,6 @@ export async function GET() {
             })
         }
         else{
-            console.log(data)
             return new Response('Unexpected error when calling /create-sandbox', {
                 status: 500
             })
@@ -44,8 +43,9 @@ export async function GET() {
         if (process.env.NODE_ENV === 'development') {
             sandbox = await Sandbox.create({ 
                 template: 'e2b-ois-image-dev',
+                cwd: '/code',
+
             })
-            console.log("/api/create-sandbox sandbox id: " + sandbox.id)
             await sandbox.keepAlive(1 * 60 * 1000) 
         }
         else {
@@ -59,8 +59,8 @@ export async function GET() {
             cmd: `uvicorn server:app --host 0.0.0.0 --port 8080 && chmod 700 server.py`,
             cwd: '/code',
         })
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         const url = "https://" + sandbox.getHostname(8080)
         const res = await fetch(url + '/create-sandbox', {
@@ -72,6 +72,7 @@ export async function GET() {
         })
 
         data = await res.json()
+
         await sandbox.close()
         if (data.status === "success") {
             return new Response(JSON.stringify({ sandboxID: sandbox.id }), {
@@ -82,8 +83,7 @@ export async function GET() {
             })
         }
         else{
-            console.log(data)
-            return new Response('Unexpected error when calling /create-sandbox', {
+            return new Response(JSON.stringify({error: 'Unexpected error when calling /create-sandbox'}), {
                 status: 500
             })
         }
