@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
-
+import { track } from '@vercel/analytics'
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
@@ -165,6 +165,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     const executePendingSubmitEvent = () => {
       if(receivedSandboxID && pendingInputValue){
         setInput('')
+        track("chat_message_sent")
         append({
           id,
           content: pendingInputValue,
@@ -186,6 +187,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     }
 
     if(receivedSandboxID){
+      track("chat_message_sent")
       handleSubmit(e)
     }
     else{
