@@ -17,7 +17,11 @@ import urllib.parse
 def setup_interpreter(interpreter):
     interpreter.auto_run = True
     interpreter.model = "gpt-3.5-turbo"
-
+    interpreter.system_message += """
+    Whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
+    "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://path/to/file.txt)." If the user asks
+    to download a file, respond with a similar syntax: "Download it here: [<filename>](sandbox://path/to/file.txt)." 
+    """
 setup_interpreter(interpreter)
 
 class ChatMessage(BaseModel):

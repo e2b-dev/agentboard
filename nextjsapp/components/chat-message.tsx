@@ -14,10 +14,12 @@ import { ChatMessageActions } from '@/components/chat-message-actions'
 export interface ChatMessageProps {
   message: Message
   agentType: string
+  handleSandboxLink: (link: string) => void
 }
 
-export function ChatMessage({ message, agentType, ...props }: ChatMessageProps) {
-  
+export function ChatMessage({ message, agentType, handleSandboxLink, ...props }: ChatMessageProps) {
+
+
   return (
     <div
       className={cn('group relative mb-4 flex items-start md:-ml-12')}
@@ -38,7 +40,22 @@ export function ChatMessage({ message, agentType, ...props }: ChatMessageProps) 
         <MemoizedReactMarkdown
           className="prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0"
           remarkPlugins={[remarkGfm, remarkMath]}
+          transformLinkUri={uri => uri}
           components={{
+            a({ children, href  }) {
+              console.log("chat-message.tsx: a: href: ", href)
+              if (href && href.startsWith('sandbox:/')) {
+                  return (
+                    <button
+                      onClick={() => handleSandboxLink(href)}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-white text-black"
+                    >
+                      {children}
+                    </button>
+                  )
+              }
+              return <a href={href}>{children}</a>
+            },
             p({ children }) {
               return <p className="mb-2 last:mb-0">{children}</p>
             },

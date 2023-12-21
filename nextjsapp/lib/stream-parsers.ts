@@ -19,7 +19,6 @@ import {type AIStreamParser} from 'ai'
 //TODO use AI Stream here
 export function parseOpenInterpreterStream(): AIStreamParser {
     return (data: string) => {
-        console.log("Data from stream: " + data)
         // decode the urllencoded data from server
         // it was urllencoded to prevent issues with the newlines and colon characters
         const formattedData = decodeURIComponent(data)

@@ -193,6 +193,29 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
     }
     
   }
+
+  const handleSandboxLink = (href: string) => {
+    fetch('/api/download-file', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({sandboxID: sandboxID, fileName: href})
+    })
+    .then(response => response.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = href.split('/').pop() || 'download';
+      document.body.appendChild(a);
+      a.click();    
+      a.remove();
+    })
+    .catch(err => {
+      console.error(err)
+    })
+  }
   return (
 
       <>
@@ -207,7 +230,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
                 </>
                 :
             <>
-              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} />
+              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} handleSandboxLink={handleSandboxLink} />
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (
@@ -228,7 +251,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         />
         
         <button 
-          className='absolute bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800'
+          className='fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800'
           onClick={() => setFeedbackDialogOpen(true)}
         >
           <IconFeedback className="w-5 h-5"/>
