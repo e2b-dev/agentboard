@@ -17,10 +17,11 @@ export async function POST(req: Request) {
         // call local docker container
         try {
             res = await fetch('http://localhost:8080/killchat', {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({ api_key: process.env.OPENAI_API_KEY })
             })
 
         }
@@ -47,10 +48,11 @@ export async function POST(req: Request) {
             const url = "https://" + sandbox.getHostname(8080)
             console.log("/api/kill-chat fetching url: " + url + "/killchat")
             res = await fetch(url + '/killchat', {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({ api_key: process.env.OPENAI_API_KEY })
             })
 
         }

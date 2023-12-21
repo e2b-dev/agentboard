@@ -6,7 +6,7 @@ Local Docker Build & Run command
 ```
 docker build -t ois-image . && \
 docker rm -f ois-container && \
-docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=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 ois-image
+docker run -d --name ois-container -p 8080:80 ois-image
 ```
 
 ===================================================================

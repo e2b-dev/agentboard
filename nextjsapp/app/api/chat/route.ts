@@ -20,7 +20,6 @@ export async function POST(req: Request) {
         })
     }
     let endTime = Date.now()
-    console.log("Time to authenticate user: " + (endTime - startTime) + "ms")
 
     // Sandbox not required for local development
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
@@ -41,7 +40,6 @@ export async function POST(req: Request) {
             body: JSON.stringify({ message: latestMessage })
         })
         endTime = Date.now()
-        console.log("Time to get response from local docker container: " + (endTime - startTime) + "ms")
 
         const stream = AIStream(res, parseOpenInterpreterStream())
 
