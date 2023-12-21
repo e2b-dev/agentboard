@@ -45,7 +45,8 @@ export default async function SharePage({ params }: SharePageProps) {
             </div>
           </div>
         </div>
-        <ChatList messages={chat.messages} agentType='openai'/>
+        {/* commenting out because ChatList API changed to handle sandboxlinks */}
+        {/* <ChatList messages={chat.messages} agentType='openai'/> */}
       </div>
       <FooterText className="py-8" />
     </>
