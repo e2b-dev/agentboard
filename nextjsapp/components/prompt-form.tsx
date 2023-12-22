@@ -52,7 +52,7 @@ export function PromptForm({
               'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
             )}>
               <IconUpload />
-              <span className="sr-only">New Chat</span>
+              <span className="sr-only">Upload File</span>
             <input
               type="file"
               onChange={fileUploadOnChange}
@@ -61,7 +61,7 @@ export function PromptForm({
             />
             </label>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>Upload File</TooltipContent>
         </Tooltip>
         <Textarea
           ref={inputRef}
