@@ -28,7 +28,6 @@ export async function GET() {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image-dev',
                     cwd: '/code',
-
                 })
                 await sandbox.keepAlive(1 * 60 * 1000) 
             }
@@ -45,6 +44,7 @@ export async function GET() {
                 cwd: '/code',
             })
             
+
             await new Promise(resolve => setTimeout(resolve, 3000));
 
 
