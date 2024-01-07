@@ -1,3 +1,27 @@
+# Local Server Workflow
+
+1. Run server locally
+```
+uvicorn server:app --host 0.0.0.0 --port 8081
+```
+
+2. Test the /helloworld endpoint
+```
+curl "http://localhost:8081/helloworld"
+```
+
+3. Test the /chatnostream endpoint
+```
+curl "http://localhost:8081/chatnostream?message=What's%20the%20date%20today"
+```
+
+3. Test the /chat endpoint (bogus API key used bc it uses system's OPENAI_API_KEY)
+```
+curl -X POST "http://localhost:8081/chat" \
+     -H "Content-Type: application/json" \
+     -d '{"chat_message": {"message": "Whats the date today"}}'
+```
+
 ===================================================================
 # Local Docker Workflow
 
@@ -27,7 +51,7 @@ docker logs $(docker ps -qf "name=ois-container")
 e2b Docker Build Command
 
 ```
-cp local.e2b.toml e2b.toml && e2b build
+cp dev.e2b.toml e2b.toml && e2b build
 
 ```
 

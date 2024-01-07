@@ -1,4 +1,4 @@
-This project uses `pnpm`, so make sure you're doing everything with `pnpm`. 
+Make sure you're doing everything with `pnpm`. 
 
 Adding packages:
 `pnpm add -D <packagename`

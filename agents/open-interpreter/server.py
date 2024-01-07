@@ -8,12 +8,12 @@ import sys
 import time
 time.sleep(2)
 
-import interpreter
+from interpreter import interpreter
 
-def setup_interpreter(the_interpreter, apiKey=None):
-    the_interpreter.api_key = apiKey
+def setup_interpreter(the_interpreter):
+    the_interpreter.llm.model = "gpt-3.5-turbo"
+    the_interpreter.llm.api_base = "https://proxy-rotps5n5ja-uc.a.run.app/v1"
     the_interpreter.auto_run = True
-    the_interpreter.model = "gpt-3.5-turbo"
     the_interpreter.system_message += """
     Whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
     "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://path/to/file.txt)." If the user asks
@@ -21,12 +21,6 @@ def setup_interpreter(the_interpreter, apiKey=None):
     """
 
 setup_interpreter(interpreter)
-
-class ChatMessage(BaseModel):
-    message: str
-
-class SandboxAPIKey(BaseModel):
-    apiKey: str
 
 import logging
 logging.basicConfig(level=logging.ERROR)
@@ -50,36 +44,32 @@ def chat_endpoint_non_stream(message: str):
         logger.error(e)
         raise
 
+class ChatMessage(BaseModel):
+    message: str
 @app.post("/chat")
-def chat_endpoint(chat_message: ChatMessage, openai_api_key: SandboxAPIKey):
-    if(interpreter.api_key == None):
-        interpreter.api_key = openai_api_key.apiKey
+def chat_endpoint(chat_message: ChatMessage):
     try:
-        message = chat_message.message
 
         def event_stream():
-            for result in interpreter.chat(message, stream=True):
+            for result in interpreter.chat(chat_message.message, stream=True):
                 
                 if result:
                     # get the first key and value in separate variables
-                    key = next(iter(result))
-                    value = result[key]
                     yieldval = ""
 
-                    if key == "code":
-                        yieldval = value
-                    elif key == "message":
-                        yieldval = value
-                    elif key == "language":
-                        yieldval = value + "\n"
-                    elif key == "output":
-                        yieldval = "\nOutput: `" + value + "`\n"
-                    elif key == "executing":
-                        yieldval = "\nRunning...\n"
-                    elif key == "start_of_code":
-                        yieldval = "\n```"
-                    elif key == "end_of_code":
-                        yieldval = "\n```\n"
+                    if result["type"] == "code":
+                        if "start" in result and result["start"]:
+                            yieldval = f"\n```{result['format']}\n"
+                        elif "end" in result and result["end"]:
+                            yieldval = "\n```\n"
+                        else:
+                            yieldval = result["content"]
+                    elif result["type"] == "message":
+                        if "content" in result and result["content"]:
+                            yieldval = result["content"]
+                    elif result["type"] == "console":
+                        if 'format' in result and result["format"] == 'output':
+                            yieldval = "\nOutput: `" + result["content"] + "`\n"
                     else:
                         yieldval = "\n\n\n"
                         
@@ -90,8 +80,8 @@ def chat_endpoint(chat_message: ChatMessage, openai_api_key: SandboxAPIKey):
         logger.error(e)
         raise
 
-@app.post("/killchat")
-def kill_chat(openai_api_key: SandboxAPIKey):
+@app.get("/killchat")
+def kill_chat():
     interpreter.reset()
-    setup_interpreter(interpreter, openai_api_key.apiKey)
+    setup_interpreter(interpreter)
     return {"status": "Chat process terminated"}

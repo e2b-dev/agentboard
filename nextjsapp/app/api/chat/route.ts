@@ -39,8 +39,7 @@ export async function POST(req: Request) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
-                chat_message: {message: latestMessage},
-                openai_api_key: { apiKey: process.env.OPENAI_API_KEY }
+                message: latestMessage,
             })
         })
         endTime = Date.now()
@@ -64,8 +63,7 @@ export async function POST(req: Request) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    chat_message: {message: latestMessage},
-                    openai_api_key: { apiKey: process.env.OPENAI_API_KEY }
+                    message: latestMessage,
                 })
             })
             endTime = Date.now()
