@@ -16,13 +16,7 @@ export async function POST(req: Request) {
     if (process.env.NODE_ENV === 'development') {
         // call local docker container
         try {
-            res = await fetch('http://localhost:8080/killchat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ api_key: process.env.OPENAI_API_KEY })
-            })
+            res = await fetch('http://localhost:8080/killchat')
 
         }
         catch (e) {
@@ -47,13 +41,7 @@ export async function POST(req: Request) {
 
             const url = "https://" + sandbox.getHostname(8080)
             console.log("/api/kill-chat fetching url: " + url + "/killchat")
-            res = await fetch(url + '/killchat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ api_key: process.env.OPENAI_API_KEY })
-            })
+            res = await fetch(url + '/killchat')
 
         }
         catch (e) {
