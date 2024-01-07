@@ -35,6 +35,7 @@ export async function GET() {
             else {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image',
+                    cwd: '/code',
                 })
                 await sandbox.keepAlive(3 * 60 * 1000) 
             }
