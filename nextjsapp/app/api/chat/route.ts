@@ -1,6 +1,6 @@
 import { AIStream, StreamingTextResponse } from 'ai'
 import { Sandbox } from '@e2b/sdk'
-import { auth } from '@/auth'
+import { supabase } from '@/supabase'
 import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 import { kv } from '@vercel/kv'
 import { nanoid } from 'nanoid'
@@ -13,13 +13,15 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const userId = (await auth())?.user
-    if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
         console.log("User not authenticated")
         return new Response('Unauthorized', {
             status: 401
         })
     }
+    const userId = user.id
     let endTime = Date.now()
 
     // Sandbox not required for local development
@@ -91,11 +93,6 @@ export async function POST(req: Request) {
                         }
                       ]
                     }
-                    await kv.hmset(`chat:${id}`, payload)
-                    await kv.zadd(`user:chat:${userId}`, {
-                      score: createdAt,
-                      member: `chat:${id}`
-                    })
                   }
             })
 

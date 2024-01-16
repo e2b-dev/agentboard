@@ -1,13 +1,12 @@
-import { AIStream, StreamingTextResponse } from 'ai'
 import { Sandbox } from '@e2b/sdk'
-import { auth } from '@/auth'
-import { Readable, Writable, pipeline } from 'stream';
+import { Writable, pipeline } from 'stream';
 import { promisify } from 'util';
+import { supabase } from '@/supabase'
 
-export async function POST(req: Request, res: Response) {
-    const userId = (await auth())?.user
-    if (!userId) {
-        console.log("User not authenticated")
+export async function POST(req: Request) {
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
         return new Response('Unauthorized', {
             status: 401
         })

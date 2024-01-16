@@ -6,6 +6,8 @@ import { signIn } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { IconGitHub, IconSpinner, IconGoogle } from '@/components/ui/icons'
+import { supabase } from '@/supabase'
+import { redirect } from 'next/navigation'
 
 interface GithubLoginButtonProps extends ButtonProps {
   showGithubIcon?: boolean
@@ -26,10 +28,15 @@ export function GithubLoginButton({
   return (
     <Button
       variant="outline"
-      onClick={() => {
+      onClick={async () => {
         setIsLoading(true)
-        // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-        signIn('github', { callbackUrl: `/` })
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'github' })
+        if (error){
+          console.error('Error signing in:', error.message)
+          setIsLoading(false)
+        }
+        else redirect('/')
+
       }}
       disabled={isLoading}
       className={cn(className)}
@@ -54,10 +61,14 @@ export function GoogleLoginButton({
   return (
     <Button
       variant="outline"
-      onClick={() => {
+      onClick={async () => {
         setIsLoading(true)
-        // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
-        signIn('google', { callbackUrl: `/` })
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+        if (error){
+          console.error('Error signing in:', error.message)
+          setIsLoading(false)
+        }
+        else redirect('/')
       }}
       disabled={isLoading}
       className={cn(className)}
