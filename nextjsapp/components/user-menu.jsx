@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { type Session } from 'next-auth'
-import { signOut } from 'next-auth/react'
+// import { type Session } from 'next-auth'
+// import { signOut } from 'next-auth/react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,17 +13,19 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { IconExternalLink } from '@/components/ui/icons'
+import { supabase } from '@/supabase'
+import { redirect } from 'next/navigation'
 
-export interface UserMenuProps {
-  user: Session['user']
-}
+// export interface UserMenuProps {
+//   user: Session['user']
+// }
 
-function getUserInitials(name: string) {
+function getUserInitials(name) {
   const [firstName, lastName] = name.split(' ')
   return lastName ? `${firstName[0]}${lastName[0]}` : firstName.slice(0, 2)
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user }) {
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>
@@ -52,8 +54,8 @@ export function UserMenu({ user }: UserMenuProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() =>
-              signOut({
-                callbackUrl: '/'
+              supabase.auth.signOut().then(() => {
+                redirect('/sign-in')
               })
             }
             className="text-xs"

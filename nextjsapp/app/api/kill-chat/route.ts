@@ -1,11 +1,10 @@
-import { auth } from '@/auth'
-
 import { Sandbox } from '@e2b/sdk'
+import { supabase } from '@/supabase'
 
 export async function POST(req: Request) {
 
-    const userId = (await auth())?.user
-    if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
         return new Response('Unauthorized', {
             status: 401
         })

@@ -1,17 +1,17 @@
 
 import { Sandbox }  from'@e2b/sdk'
-import { auth } from '@/auth'
+import { supabase } from '@/supabase'
 
 export async function GET() {
     
-    const userId = (await auth())?.user
-    if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
         return new Response(JSON.stringify({error: 'Unauthorized'}), {
             status: 401
         })
     }
+    const userId = user.id
 
-    let data;
     if(process.env.DOCKER == 'local'){
 
         return new Response(JSON.stringify({ sandboxID: 'dummySandboxID' }), {
