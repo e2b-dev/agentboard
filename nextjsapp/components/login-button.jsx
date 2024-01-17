@@ -1,14 +1,14 @@
 'use client'
 
 import * as React from 'react'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button} from '@/components/ui/button'
 import { IconGitHub, IconSpinner, IconGoogle } from '@/components/ui/icons'
 
 export function GithubLoginButton({ ...props}) {
   const supabase = createClientComponentClient()
-
+  const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
 
   return (
@@ -28,7 +28,7 @@ export function GithubLoginButton({ ...props}) {
           setIsLoading(false)
         }
         
-        else redirect('/')
+        else router.push('/')
 
       }}
       disabled={isLoading}
@@ -45,6 +45,8 @@ export function GithubLoginButton({ ...props}) {
 }
 export function GoogleLoginButton({...props}) {
   const [isLoading, setIsLoading] = React.useState(false)
+  const supabase = createClientComponentClient()
+  const router = useRouter()
   return (
     <Button
       variant="outline"
@@ -61,7 +63,7 @@ export function GoogleLoginButton({...props}) {
           console.error('Error signing in:', error.message)
           setIsLoading(false)
         }
-        else redirect('/')
+        else router.push('/')
       }}
       disabled={isLoading}
       {...props}

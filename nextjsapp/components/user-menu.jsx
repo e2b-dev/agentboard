@@ -10,9 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 
 
 function getUserInitials(name) {
@@ -21,8 +20,8 @@ function getUserInitials(name) {
 }
 
 export function UserMenu({ user }) {
-  const supabase = createClientComponentClient({ cookies })
-  
+  const supabase = createClientComponentClient()
+  const router = useRouter()
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>
@@ -52,7 +51,7 @@ export function UserMenu({ user }) {
           <DropdownMenuItem
             onClick={() =>
               supabase.auth.signOut().then(() => {
-                redirect('/sign-in')
+                router.push('/sign-in')
               })
             }
             className="text-xs"
