@@ -1,8 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-// import { type Session } from 'next-auth'
-// import { signOut } from 'next-auth/react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,13 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { IconExternalLink } from '@/components/ui/icons'
-import { supabase } from '@/supabase'
 import { redirect } from 'next/navigation'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
-// export interface UserMenuProps {
-//   user: Session['user']
-// }
 
 function getUserInitials(name) {
   const [firstName, lastName] = name.split(' ')
@@ -26,6 +21,8 @@ function getUserInitials(name) {
 }
 
 export function UserMenu({ user }) {
+  const supabase = createClientComponentClient({ cookies })
+  
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>

@@ -1,16 +1,16 @@
 
-import { Sandbox }  from'@e2b/sdk'
-import { supabase } from '@/supabase'
-
+import { Sandbox }  from '@e2b/sdk'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 export async function GET() {
-    
+    const supabase = createRouteHandlerClient({cookies})
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response(JSON.stringify({error: 'Unauthorized'}), {
             status: 401
         })
     }
-    const userId = user.id
 
     if(process.env.DOCKER == 'local'){
 
@@ -63,9 +63,5 @@ export async function GET() {
         }
 
     }
-    
-                
-    
-
 
 }
