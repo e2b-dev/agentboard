@@ -24,12 +24,11 @@ export function UserMenu({ user }) {
   const router = useRouter()
 
   const user_data = user.user_metadata
-  console.log("user_data", user_data)
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="pl-0">
+          <Button variant="ghost" className="pl-0 px-0">
             {user?.user_metadata?.avatar_url ? (
               <Image
                 className="w-6 h-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
