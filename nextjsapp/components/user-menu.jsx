@@ -22,36 +22,40 @@ function getUserInitials(name) {
 export function UserMenu({ user }) {
   const supabase = createClientComponentClient()
   const router = useRouter()
+
+  const user_data = user.user_metadata
+  console.log("user_data", user_data)
   return (
     <div className="flex items-center justify-between">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="pl-0">
-            {user?.image ? (
+            {user?.user_metadata?.avatar_url ? (
               <Image
                 className="w-6 h-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
-                src={user?.image ? `${user.image}` : 'https://www.gravatar.com/avatar'}
-                alt={user.name ?? 'Avatar'}
+                src={user_data.avatar_url ? `${user_data.avatar_url}` : 'https://www.gravatar.com/avatar'}
+                alt={user_data.name ?? 'Avatar'}
                 height={48} width={48}
               />
             ) : (
               <div className="flex items-center justify-center text-xs font-medium uppercase rounded-full select-none h-7 w-7 shrink-0 bg-muted/50 text-muted-foreground">
-                {user?.name ? getUserInitials(user?.name) : null}
+                {user_data.name ? getUserInitials(user_data.name) : null}
               </div>
             )}
-            <span className="ml-2">{user?.name}</span>
+            <span className="ml-2">{user_data.name}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={8} align="start" className="w-[180px]">
           <DropdownMenuItem className="flex-col items-start">
-            <div className="text-xs font-medium">{user?.name}</div>
-            <div className="text-xs text-zinc-500">{user?.email}</div>
+            <div className="text-xs font-medium">{user_data.name}</div>
+            <div className="text-xs text-zinc-500">{user_data.email}</div>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() =>
               supabase.auth.signOut().then(() => {
                 router.push('/sign-in')
+                router.refresh()
               })
             }
             className="text-xs"
