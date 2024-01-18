@@ -14,7 +14,12 @@ export async function GET(request){
     const code = requestUrl.searchParams.get('code');
 
     if (code){
+        console.log("Found code")
         await supabase.auth.exchangeCodeForSession(code);
+    }
+    else{
+        console.log("No code found")
+        console.log("requestUrl", requestUrl)
     }
 
     return NextResponse.redirect(requestUrl.origin);
