@@ -5,8 +5,7 @@ import { nanoid } from 'nanoid'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 
 import { cookies } from 'next/headers';
-import { cache } from 'react';
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export async function POST(req: Request) {
     const json = await req.json()
@@ -14,12 +13,7 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const createRouteSupabaseClient = cache(() => {
-        const cookieStore = cookies()
-        return createRouteHandlerClient({ cookies: () => cookieStore })
-      })
-
-    const supabase = createRouteSupabaseClient()
+    const supabase = createRouteHandlerClient({ cookies})
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
