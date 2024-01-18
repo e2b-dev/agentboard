@@ -11,6 +11,7 @@ export function GithubLoginButton({ ...props}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
 
+  console.log("process.env.NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL)
   return (
     <Button
       variant="outline"
