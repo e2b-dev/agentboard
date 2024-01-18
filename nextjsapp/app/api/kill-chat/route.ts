@@ -3,8 +3,9 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient({cookies: () => cookieStore})
 
-    const supabase = createRouteHandlerClient({cookies: () => cookies()})
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response('Unauthorized', {

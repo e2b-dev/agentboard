@@ -3,6 +3,7 @@ import { Writable, pipeline } from 'stream';
 import { promisify } from 'util';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 export async function POST(req: Request) {
 
     const supabase = createRouteHandlerClient({cookies: () => cookies()})

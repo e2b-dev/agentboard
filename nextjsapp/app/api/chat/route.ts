@@ -13,7 +13,8 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const supabase = createRouteHandlerClient({cookies: () => cookies()})
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient({cookies: () => cookieStore})
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
