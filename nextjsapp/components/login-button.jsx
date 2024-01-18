@@ -19,8 +19,7 @@ export function GithubLoginButton({ ...props}) {
         const { error } = await supabase.auth.signInWithOAuth({ 
           provider: 'github',
           options: {
-            // TODO: FIX THIS FOR DEV, STAGING, PROD
-            redirectTo: 'http://localhost:3000/auth/callback'
+            redirectTo: process.env.NEXT_PUBLIC_VERCEL_URL + '/auth/callback'
           }
         })
         if (error){
