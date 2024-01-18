@@ -3,8 +3,8 @@ import { Sandbox } from '@e2b/sdk'
 import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 import { nanoid } from 'nanoid'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
+import { cookies } from 'next/headers';
 export const runtime = 'edge'
 
 export async function POST(req: Request) {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const supabase = createRouteHandlerClient({cookies})
+    const supabase = createRouteHandlerClient({cookies: () => cookies()})
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
