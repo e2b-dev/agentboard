@@ -3,7 +3,7 @@ import { Sandbox }  from '@e2b/sdk'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 export async function GET() {
-    const supabase = createRouteHandlerClient({cookies})
+    const supabase = createRouteHandlerClient({cookies: () => cookies()})
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
