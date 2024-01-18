@@ -5,11 +5,6 @@ import { GithubLoginButton, GoogleLoginButton } from '@/components/login-button'
 
 
 export default async function SignInPage() {
-  // const session = await auth()
-  // // redirect to home if user is already logged in
-  // if (session?.user) {
-  //   redirect('/')
-  // }
 
   const supabase = createServerComponentClient({cookies})
   const {data: {session}} = await supabase.auth.getSession()
