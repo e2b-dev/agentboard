@@ -11,7 +11,6 @@ export function GithubLoginButton({ ...props}) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
 
-  console.log("process.env.NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL)
   return (
     <Button
       variant="outline"
@@ -20,7 +19,7 @@ export function GithubLoginButton({ ...props}) {
         const { error } = await supabase.auth.signInWithOAuth({ 
           provider: 'github',
           options: {
-            redirectTo: process.env.NEXT_PUBLIC_VERCEL_URL + '/auth/callback'
+            redirectTo: window.location.origin + '/auth/callback'
           }
         })
         if (error){
