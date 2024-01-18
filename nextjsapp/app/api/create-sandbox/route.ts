@@ -2,10 +2,14 @@
 import { Sandbox }  from '@e2b/sdk'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 export async function GET() {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({cookies: () => cookieStore})
+    const createRouteSupabaseClient = cache(() => {
+        const cookieStore = cookies()
+        return createRouteHandlerClient({ cookies: () => cookieStore })
+      })
 
+    const supabase = createRouteSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response(JSON.stringify({error: 'Unauthorized'}), {

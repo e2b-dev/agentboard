@@ -1,10 +1,14 @@
 import { Sandbox } from '@e2b/sdk'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-
+import { cache } from 'react';
 export async function POST(req: Request) {
-    const cookieStore = cookies()
-    const supabase = createRouteHandlerClient({cookies: () => cookieStore})
+    const createRouteSupabaseClient = cache(() => {
+        const cookieStore = cookies()
+        return createRouteHandlerClient({ cookies: () => cookieStore })
+      })
+
+    const supabase = createRouteSupabaseClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {

@@ -6,7 +6,12 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 export async function POST(req: Request) {
 
-    const supabase = createRouteHandlerClient({cookies: () => cookies()})
+    const createRouteSupabaseClient = cache(() => {
+        const cookieStore = cookies()
+        return createRouteHandlerClient({ cookies: () => cookieStore })
+      })
+
+    const supabase = createRouteSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response('Unauthorized', {
