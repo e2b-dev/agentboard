@@ -1,11 +1,11 @@
 
 import { Sandbox }  from '@e2b/sdk'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server'
 
 export async function GET() {
-
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response(JSON.stringify({error: 'Unauthorized'}), {
@@ -37,7 +37,7 @@ export async function GET() {
                     template: 'e2b-ois-image',
                     cwd: '/code',
                 })
-                await sandbox.keepAlive(3 * 60 * 1000) 
+                await sandbox.keepAlive(5 * 60 * 1000) 
             }
 
             await sandbox.process.start({

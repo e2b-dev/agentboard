@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/utils/supabase/server'
 
 import { nanoid } from '@/lib/utils'
 import { Chat } from '@/components/chat'
@@ -8,7 +8,8 @@ import { Chat } from '@/components/chat'
 export default async function IndexPage() {
 
   // protect route for authenticated users only
-  const supabase = createServerComponentClient({cookies})
+  const cookieStore = cookies()
+  const supabase = createClient(cookieStore)
   const {data: {session}} = await supabase.auth.getSession()
   if (!session) {
     redirect('/sign-in')
