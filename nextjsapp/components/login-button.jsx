@@ -2,13 +2,13 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Button} from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { IconGitHub, IconSpinner, IconGoogle } from '@/components/ui/icons'
+import { createClient } from '@/utils/supabase/client'
 
 export function GithubLoginButton({ ...props}) {
-  const supabase = createClientComponentClient()
   const router = useRouter()
+  const supabase = createClient()
   const [isLoading, setIsLoading] = React.useState(false)
 
   return (
@@ -16,11 +16,11 @@ export function GithubLoginButton({ ...props}) {
       variant="outline"
       onClick={async () => {
         setIsLoading(true)
-        const { error } = await supabase.auth.signInWithOAuth({ 
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'github',
-          options: {
-            redirectTo: window.location.origin + '/auth/callback'
-          }
+            options: {
+              redirectTo: window.location.origin + '/auth/callback'
+            }
         })
         if (error){
           console.error('Error signing in:', error.message)
@@ -43,20 +43,20 @@ export function GithubLoginButton({ ...props}) {
   )
 }
 export function GoogleLoginButton({...props}) {
+  const supabase = createClient()
   const [isLoading, setIsLoading] = React.useState(false)
-  const supabase = createClientComponentClient()
   const router = useRouter()
+
   return (
     <Button
       variant="outline"
       onClick={async () => {
         setIsLoading(true)
-        const { error } = await supabase.auth.signInWithOAuth({ 
+        const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: {
-            // TODO: FIX THIS FOR DEV, STAGING, PROD
-            redirectTo: 'http://localhost:3000/auth/callback'
-          }
+            options: {
+              redirectTo: window.location.origin + '/auth/callback'
+            }
         })
         if (error){
           console.error('Error signing in:', error.message)

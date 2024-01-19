@@ -2,7 +2,7 @@ import { AIStream, StreamingTextResponse } from 'ai'
 import { Sandbox } from '@e2b/sdk'
 import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 import { nanoid } from 'nanoid'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from "@/utils/supabase/server";
 
 import { cookies } from 'next/headers';
 // export const runtime = 'edge'
@@ -13,7 +13,9 @@ export async function POST(req: Request) {
 
     let latestMessage = messages[messages.length - 1].content
 
-    const supabase = createRouteHandlerClient({ cookies})
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
     else {
         try {
             const sandbox = await Sandbox.reconnect(sandboxID) 
-            await sandbox.keepAlive(3 * 60 * 1000) 
+            await sandbox.keepAlive(5 * 60 * 1000) 
 
             const url = "https://" + sandbox.getHostname(8080)
 

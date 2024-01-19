@@ -8,12 +8,13 @@ import {
 } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
 import { ExternalLink } from '@/components/external-link'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { createClient } from '@/utils/supabase/server'
 
 
 export async function Header() {
-  const supabase = createServerComponentClient({cookies})
+  const cookieStore = cookies()
+  const supabase = createClient(cookieStore)
 
   const { data: { user } } = await supabase.auth.getUser()
 

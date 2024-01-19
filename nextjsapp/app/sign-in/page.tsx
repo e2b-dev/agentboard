@@ -1,12 +1,13 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { GithubLoginButton, GoogleLoginButton } from '@/components/login-button'
+import { createClient } from '@/utils/supabase/server'
 
 
 export default async function SignInPage() {
 
-  const supabase = createServerComponentClient({cookies})
+  const cookieStore = cookies()
+  const supabase = createClient(cookieStore)
   const {data: {session}} = await supabase.auth.getSession()
   if (session) {
     redirect('/')
