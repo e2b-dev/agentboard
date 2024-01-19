@@ -31,7 +31,7 @@ export function UserMenu({ user }) {
           <Button variant="ghost" className="pl-0 px-0">
             {user?.user_metadata?.avatar_url ? (
               <Image
-                className="w-6 h-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80"
+                className="w-6 h-6 transition-opacity duration-300 rounded-full select-none ring-1 ring-zinc-100/10 hover:opacity-80 mr-2"
                 src={user_data.avatar_url ? `${user_data.avatar_url}` : 'https://www.gravatar.com/avatar'}
                 alt={user_data.name ?? 'Avatar'}
                 height={48} width={48}
