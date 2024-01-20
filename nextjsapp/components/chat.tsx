@@ -11,7 +11,7 @@ import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -25,7 +25,7 @@ interface SandboxData {
 }
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
-  
+
   const [sandboxID, setSandboxID] = useState("")
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
   const [receivedSandboxID, setReceivedSandboxID] = useState(false)
@@ -218,6 +218,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       console.error(err)
     })
   }
+
   return (
 
       <>

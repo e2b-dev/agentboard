@@ -53,7 +53,7 @@ export function UserMenu({ user }) {
           <DropdownMenuItem
             onClick={() =>
               supabase.auth.signOut().then(() => {
-                router.push('/sign-in')
+                router.push('/')
                 router.refresh()
               })
             }
