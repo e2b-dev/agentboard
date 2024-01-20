@@ -46,8 +46,6 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
         }
     })
   
-  
-  
   useEffect(() => {
     // add a user message to that chat that a file is being uploaded
     if(fileUploading){
@@ -152,7 +150,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       }
     }
 
-    if(sandboxID == ""){
+    if(sandboxID == "" && loggedIn){
       fetchSandboxID()
         .catch(err => console.error(err))
     }
