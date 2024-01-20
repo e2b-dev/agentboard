@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
+import dynamic from 'next/dynamic'
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,10 @@ interface RootLayoutProps {
   children: React.ReactNode
 }
 
+const PostHogPageView = dynamic(() => import('../utils/posthog/client'), {
+  ssr: false,
+})
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -48,6 +53,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             {/* @ts-ignore */}
             <Header />
             <main className="flex flex-col flex-1 bg-muted/50">{children}</main>
+            <PostHogPageView />
           </div>
           <TailwindIndicator />
         </Providers>

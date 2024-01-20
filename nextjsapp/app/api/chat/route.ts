@@ -3,8 +3,9 @@ import { Sandbox } from '@e2b/sdk'
 import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 import { nanoid } from 'nanoid'
 import { createClient } from "@/utils/supabase/server";
-
 import { cookies } from 'next/headers';
+import PostHogClient from '@/utils/posthog/server'
+
 // export const runtime = 'edge'
 
 export async function POST(req: Request) {
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     const supabase = createClient(cookieStore)
 
     const { data: { user } } = await supabase.auth.getUser()
-
+    
     if (!user) {
         console.log("User not authenticated")
         return new Response('Unauthorized', {
@@ -25,7 +26,16 @@ export async function POST(req: Request) {
         })
     }
     const userId = user.id
-    let endTime = Date.now()
+
+    // record message user sends to analytics
+    const posthog = PostHogClient()
+    posthog.capture({
+        distinctId: userId,
+        event: 'chat_message_sent',
+        properties: {
+            message: latestMessage
+        }
+    })
 
     // Sandbox not required for local development
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
@@ -47,7 +57,6 @@ export async function POST(req: Request) {
                 message: latestMessage,
             })
         })
-        endTime = Date.now()
 
         const stream = AIStream(res, parseOpenInterpreterStream())
 
@@ -71,7 +80,6 @@ export async function POST(req: Request) {
                     message: latestMessage,
                 })
             })
-            endTime = Date.now()
             
             const stream = AIStream(res, parseOpenInterpreterStream(), {
                 async onFinal(completion){
