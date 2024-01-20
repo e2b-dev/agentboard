@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 import { track } from '@vercel/analytics'
@@ -14,17 +14,18 @@ import * as agents from '@/lib/agents'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
+  loggedIn: boolean
 }
 interface SandboxData {
   sandboxID: string;
 }
 
-export function Chat({ id, initialMessages, className }: ChatProps) {
+export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
 
   const [sandboxID, setSandboxID] = useState("")
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
@@ -36,20 +37,16 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
   const [feedbackText, setFeedbackText] = useState("")
   const [sendingFeedback, setSendingFeedback] = useState(false)
 
+
   const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } =
-    useChat({
-      initialMessages,
-      id,
-      body: {
-        id,
-        sandboxID
-      },
-      onResponse(response) {
-        if (response.status === 401) {
-          toast.error(response.statusText)
+    useChat({ initialMessages, id, body: {id, sandboxID}, onResponse(response) {
+            if (response.status === 401) {
+            toast.error(response.statusText)
+          }
         }
-      }
     })
+  
+  
   
   useEffect(() => {
     // add a user message to that chat that a file is being uploaded
@@ -240,18 +237,20 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
               <EmptyScreen setInput={setInput} />
           )}
         </div>
-        <ChatPanel
-          id={id}
-          isLoading={isLoading}
-          stop={stopEverything}
-          reload={reload}
-          messages={messages}
-          input={input}
-          setInput={setInput}
-          handleSubmit={handleMessageSubmit}
-          fileUploadOnChange={fileUploadOnChange}
-          fileUploading={fileUploading}
-        />
+
+          <ChatPanel
+            id={id}
+            isLoading={isLoading}
+            stop={stopEverything}
+            reload={reload}
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleMessageSubmit}
+            fileUploadOnChange={fileUploadOnChange}
+            fileUploading={fileUploading}
+            loggedIn={loggedIn}
+          />
         
         <button 
           className='fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800'

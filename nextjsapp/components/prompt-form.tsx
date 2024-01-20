@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/tooltip'
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { cn } from '@/lib/utils'
-import { useRouter } from 'next/navigation'
 
 export interface PromptProps
   extends Pick<UseChatHelpers, 'input' | 'setInput' | 'handleSubmit' > {
@@ -19,19 +18,20 @@ export interface PromptProps
   fileUploadOnChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   fileUploading: boolean
   isLoading: boolean
+  loggedIn: boolean
 }
 
 export function PromptForm({
-  handleSubmit,
-  input,
-  setInput,
+  handleSubmit, 
+  input, 
+  setInput, 
   isLoading,
   fileUploadOnChange,
-  fileUploading
+  fileUploading,
+  loggedIn
 }: PromptProps) {
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const router = useRouter()
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -57,7 +57,7 @@ export function PromptForm({
               type="file"
               onChange={fileUploadOnChange}
               style={{ display: 'none' }}
-              disabled={isLoading || fileUploading}
+              disabled={isLoading || fileUploading || !loggedIn}
             />
             </label>
           </TooltipTrigger>
@@ -73,7 +73,7 @@ export function PromptForm({
           placeholder="Send a message."
           spellCheck={false}
           className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-          disabled={isLoading || fileUploading}
+          disabled={isLoading || fileUploading || !loggedIn}
         />
         <div className="absolute right-0 top-4 sm:right-4">
           <Tooltip>
@@ -81,7 +81,7 @@ export function PromptForm({
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || input === ''}
+                disabled={isLoading || input === '' || !loggedIn}
               >
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
