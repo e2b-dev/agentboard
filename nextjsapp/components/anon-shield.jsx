@@ -4,20 +4,20 @@ If the user clicks anywhere on the anon shield, a modal appears prompting them t
 */
 'use client'
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { GithubLoginButton, GoogleLoginButton } from '@/components/login-button'
 export function AnonShield() {
-    
-    const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
 
     return (
         <>
         <div 
             className="fixed inset-0 bg-transparent z-10" 
-            onClick={() => setFeedbackDialogOpen(true)}
+            onClick={() => setLoginDialogOpen(true)}
         />
-        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+        <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Log in</DialogTitle>

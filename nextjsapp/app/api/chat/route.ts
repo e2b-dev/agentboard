@@ -17,8 +17,8 @@ export async function POST(req: Request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
 
+    // only allow authorized users
     const { data: { user } } = await supabase.auth.getUser()
-    
     if (!user) {
         console.log("User not authenticated")
         return new Response('Unauthorized', {
@@ -28,14 +28,14 @@ export async function POST(req: Request) {
     const userId = user.id
 
     // record message user sends to analytics
-    const posthog = PostHogClient()
-    posthog.capture({
-        distinctId: userId,
-        event: 'chat_message_sent',
-        properties: {
-            message: latestMessage
-        }
-    })
+    // const posthog = PostHogClient()
+    // posthog.capture({
+    //     distinctId: userId,
+    //     event: 'chat_message_sent',
+    //     properties: {
+    //         message: latestMessage
+    //     }
+    // })
 
     // Sandbox not required for local development
     if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
