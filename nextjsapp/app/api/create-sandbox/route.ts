@@ -25,7 +25,7 @@ export async function GET() {
     else{
         try {
             let sandbox
-            if (process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'preview') {
+            if (process.env.NODE_ENV === 'development') {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image-dev',
                     cwd: '/code',
