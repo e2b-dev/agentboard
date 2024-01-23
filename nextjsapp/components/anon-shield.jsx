@@ -25,7 +25,7 @@ export function AnonShield() {
                 <DialogDescription>
                 Log in to start chatting.
                 </DialogDescription>
-                <div className="flex flex-col h-20 items-center justify-center py-10">
+                <div className="flex flex-col h-20 items-center justify-center py-10 space-y-2">
                     <GoogleLoginButton />
                     <GithubLoginButton />
                 </div>

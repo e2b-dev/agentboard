@@ -2,14 +2,16 @@ import { type Message } from 'ai'
 
 import { Separator } from '@/components/ui/separator'
 import { ChatMessage } from '@/components/chat-message'
+import { IconSpinner } from '@/components/ui/icons'
 
 export interface ChatList {
   messages: Message[],
-  agentType: string
-  handleSandboxLink: (link: string) => void
+  agentType: string,
+  handleSandboxLink: (link: string) => void,
+  isLoading: boolean
 }
 
-export function ChatList({ messages, handleSandboxLink, agentType }: ChatList) {
+export function ChatList({ messages, handleSandboxLink, agentType, isLoading }: ChatList) {
   if (!messages.length) {
     return null
   }
@@ -24,6 +26,11 @@ export function ChatList({ messages, handleSandboxLink, agentType }: ChatList) {
           )}
         </div>
       ))}
+      {isLoading && (
+        <div className="flex justify-center items-center">
+          <IconSpinner/>
+        </div>
+      )}
     </div>
   )
 }

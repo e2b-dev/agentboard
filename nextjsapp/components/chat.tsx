@@ -228,7 +228,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
                 </>
                 :
             <>
-              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} handleSandboxLink={handleSandboxLink} />
+              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} handleSandboxLink={handleSandboxLink} isLoading={isLoading} />
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
           ) : (
