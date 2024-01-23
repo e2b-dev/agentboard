@@ -11,7 +11,6 @@ time.sleep(2)
 from interpreter import interpreter
 
 def setup_interpreter(the_interpreter):
-    the_interpreter.llm.model = "gpt-3.5-turbo"
     the_interpreter.llm.api_base = "https://proxy-rotps5n5ja-uc.a.run.app/v1"
     the_interpreter.auto_run = True
     the_interpreter.system_message += """
