@@ -20,7 +20,7 @@ curl "http://localhost:8081/chatnostream?message=What's%20the%20date%20today"
 ```
 curl -X POST "http://localhost:8081/chat" \
      -H "Content-Type: application/json" \
-     -d '{"chat_message": {"message": "Whats the date today"}}'
+     -d '{"message": "Whats the date today"}'
 ```
 
 ===================================================================

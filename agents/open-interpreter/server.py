@@ -52,6 +52,7 @@ def chat_endpoint(chat_message: ChatMessage):
         def event_stream():
             for result in interpreter.chat(chat_message.message, stream=True):
                 
+                print("Result: ", result)
                 if result:
                     # get the first key and value in separate variables
                     yieldval = ""
@@ -67,8 +68,12 @@ def chat_endpoint(chat_message: ChatMessage):
                         if "content" in result and result["content"]:
                             yieldval = result["content"]
                     elif result["type"] == "console":
-                        if 'format' in result and result["format"] == 'output':
-                            yieldval = "\nOutput: `" + result["content"] + "`\n"
+                        if "start" in result and result["start"]:
+                            yieldval = f"\n```shell output-bash\n"
+                        elif "end" in result and result["end"]:
+                            yieldval = "\n```\n"
+                        elif 'format' in result and result["format"] == 'output':
+                            yieldval = result["content"]
                     else:
                         yieldval = "\n\n\n"
                         
