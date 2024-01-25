@@ -28,21 +28,18 @@ export async function GET() {
             if (process.env.NODE_ENV === 'development') {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image-dev',
-                    cwd: '/code',
                 })
                 await sandbox.keepAlive(1 * 60 * 1000) 
             }
             else {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image',
-                    cwd: '/code',
                 })
                 await sandbox.keepAlive(5 * 60 * 1000) 
             }
 
             await sandbox.process.start({
-                cmd: `uvicorn server:app --host 0.0.0.0 --port 8080 && chmod 700 server.py`,
-                cwd: '/code',
+                cmd: `uvicorn --app-dir /code server:app --host 0.0.0.0 --port 8080`,
             })
             
 

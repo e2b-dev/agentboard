@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, createContext } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 import { track } from '@vercel/analytics'
@@ -11,7 +11,13 @@ import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -22,156 +28,159 @@ export interface ChatProps extends React.ComponentProps<'div'> {
   loggedIn: boolean
 }
 interface SandboxData {
-  sandboxID: string;
+  sandboxID: string
 }
 
 export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
 
-  const [sandboxID, setSandboxID] = useState("")
-  const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
+  /* State for sandbox management */
+  const [sandboxID, setSandboxID] = useState('')
   const [receivedSandboxID, setReceivedSandboxID] = useState(false)
-  const [pendingInputValue, setPendingInputValue] = useState<string | null>(null);
+
+  /* State for first message submitted */
+  const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
+
+  /* State for text input */
+  const [pendingMessageInputValue, setPendingMessageInputValue] = useState<string | null>(null)
+
+  /* State for file upload input */
+  const [pendingFileInputValue, setPendingFileInputValue] = useState<React.ChangeEvent<HTMLInputElement> | null>(null)
   const [fileUploading, setFileUploading] = useState(false)
-  const [uploadingFileName, setUploadingFileName] = useState("")
+
+  /* State for feedback dialog */
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
-  const [feedbackText, setFeedbackText] = useState("")
+  const [feedbackText, setFeedbackText] = useState('')
   const [sendingFeedback, setSendingFeedback] = useState(false)
 
-
-  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } =
-    useChat({ initialMessages, id, body: {id, sandboxID}, onResponse(response) {
-            if (response.status === 401) {
-            toast.error(response.statusText)
-          }
-        }
-    })
-  
-  useEffect(() => {
-    // add a user message to that chat that a file is being uploaded
-    if(fileUploading){
-      setMessages(
-        [
-          ...messages,
-          {
-            id: id || 'default-id',
-            content: `Uploading \`${uploadingFileName}\`...`,
-            role: 'user'
-          }
-        ]
-      )
-    }
-    else if(messages.length>0){
-      // remove the file uploading message
-      let latestMessage = {...messages[messages.length - 1]}
-      latestMessage.content = latestMessage.content.replace('Uploading', 'Uploaded').replace('...', '')
-      let newMessages = [
-        ...messages.slice(0, messages.length - 1),
-        latestMessage
-      ]
-      setMessages(newMessages)
-    }
-  }, [fileUploading])
-
-  async function stopEverything() {
-    // Call the original stop function
-    stop();
-
-    // Make a call to the /killchat API endpoint
-    try {
-        const response = await fetch('/api/kill-chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({sandboxID: sandboxID})
-        })
-        const data = await response.text();
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${data}`);
-        }
-    } catch (error) {
-        console.error('Error while calling killchat:', error);
-    }
-  }
-  
-  async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement>) {
-      if(e.target.files){
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('fileName', file.name)
-        formData.append('sandboxID', sandboxID);
-        setUploadingFileName(file.name)
-        setFileUploading(true)
-        fetch('/api/upload-file', {
-          method: 'POST',
-          body: formData,
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          setFileUploading(false)
-          setUploadingFileName("")
-          return response.json();
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          setFileUploading(false)
-        });
+  /* State for chat messages */
+  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } = useChat({
+    initialMessages,
+    id,
+    body: { id, sandboxID },
+    onResponse(response) {
+      if (response.status === 401) {
+        toast.error(response.statusText)
       }
-  }
+    }
+  })
 
+  /* Creates sandbox on first load */
   useEffect(() => {
-    
     const fetchSandboxID = async () => {
-      if (sandboxID == ""){
+      if (sandboxID == '') {
         await fetch('/api/create-sandbox', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
+          }
         })
-        .then(res => {
-          if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-          return res.json()
-        })
-        .then(data => {
-          return new Promise(resolve => setTimeout(() => resolve(data), 5000));
-        })
-        .then((data: unknown) => {
-          const sandboxData = data as SandboxData
-          setSandboxID(sandboxData.sandboxID)
-          setTimeout(() => setReceivedSandboxID(true), 5000)
-        })
-        .catch(err => {
-          console.error(err)
-        })
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+            return res.json()
+          })
+          .then(data => {
+            return new Promise(resolve => setTimeout(() => resolve(data), 5000))
+          })
+          .then((data: unknown) => {
+            const sandboxData = data as SandboxData
+            setSandboxID(sandboxData.sandboxID)
+            setTimeout(() => setReceivedSandboxID(true), 5000)
+          })
+          .catch(err => {
+            console.error(err)
+          })
       }
     }
 
-    if(sandboxID == "" && loggedIn){
-      fetchSandboxID()
-        .catch(err => console.error(err))
+    if (sandboxID == '' && loggedIn) {
+      fetchSandboxID().catch(err => console.error(err))
     }
   }, [sandboxID])
 
+  /* Stores user file input in pendingFileInputValue */
+  async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFirstMessageSubmitted(true)
+    setPendingFileInputValue(e)
+  }
+
+  /* Sends pending file input to sandbox after sandbox is created */
   useEffect(() => {
-    const executePendingSubmitEvent = () => {
-      if(receivedSandboxID && pendingInputValue){
-        setInput('')
-        track("chat_message_sent")
-        append({
-          id,
-          content: pendingInputValue,
-          role: 'user'
-        })
-        setPendingInputValue(null)
+    const executePendingFileUploadEvent = () => {
+      if (receivedSandboxID && pendingFileInputValue) {
+        if (pendingFileInputValue.target.files) {
+
+          // needed to disable other user input while file is uploading
+          setFileUploading(true)
+
+          // prepare file for upload
+          const file = pendingFileInputValue.target.files[0]
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('fileName', file.name)
+          formData.append('sandboxID', sandboxID)
+
+          const originalMessages = messages
+
+          // indicate to user that file is uploading
+          const updatedMessages = [
+            ...originalMessages,
+            {
+              id: id || 'default-id',
+              content: `Uploading \`${file.name}\`...`,
+              role: 'user' as 'user'
+            }
+          ]
+          setMessages(updatedMessages)
+
+          // upload file
+          fetch('/api/upload-file', {
+            method: 'POST',
+            body: formData
+          })
+            .then(response => {
+              if (!response.ok) {
+                console.log("Error when uploading file - response not ok")
+                throw new Error('Network response was not ok')
+              }
+
+              // replace file upload message with success message
+              let newMessages = [
+                ...originalMessages,
+                {
+                  id: id || 'default-id',
+                  content: `Uploaded \`${file.name}\`!`,
+                  role: 'user' as 'user'
+                }
+              ]
+              setMessages(newMessages)
+
+              return response.json()
+            })
+            .catch(error => {
+              console.error('Error when uploading file:', error)
+
+              // replace file upload message with error message
+              let newMessages = [
+                ...originalMessages,
+                {
+                  id: id || 'default-id',
+                  content: `Unable to upload \`${file.name}\`!`,
+                  role: 'user' as 'user'
+                }
+              ]
+              setMessages(newMessages)
+            })
+            .finally(() => {
+              setPendingFileInputValue(null)
+              setFileUploading(false)
+            })
+        }
       }
     }
-    executePendingSubmitEvent()
-  }, [receivedSandboxID, pendingInputValue])
+    executePendingFileUploadEvent()
+  }, [receivedSandboxID, pendingFileInputValue])
 
+  /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!input?.trim()) {
@@ -181,15 +190,31 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       setFirstMessageSubmitted(true)
     }
 
-    if(receivedSandboxID){
-      track("chat_message_sent")
+    if (receivedSandboxID) {
+      track('chat_message_sent')
       handleSubmit(e)
+    } else {
+      setPendingMessageInputValue(input)
     }
-    else{
-      setPendingInputValue(input)
-    }
-    
   }
+  /* Sends the pending message to sandbox once it is created */
+  useEffect(() => {
+    const executePendingSubmitEvent = () => {
+      if (receivedSandboxID && pendingMessageInputValue) {
+        setInput('')
+        track('chat_message_sent')
+        append({
+          id,
+          content: pendingMessageInputValue,
+          role: 'user'
+        })
+        setPendingMessageInputValue(null)
+      }
+    }
+    executePendingSubmitEvent()
+  }, [receivedSandboxID, pendingMessageInputValue])
+
+
 
   const handleSandboxLink = (href: string) => {
     fetch('/api/download-file', {
@@ -197,107 +222,139 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({sandboxID: sandboxID, fileName: href})
+      body: JSON.stringify({ sandboxID: sandboxID, fileName: href })
     })
-    .then(response => response.blob())
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = href.split('/').pop() || 'download';
-      document.body.appendChild(a);
-      a.click();    
-      a.remove();
-    })
-    .catch(err => {
-      console.error(err)
-    })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = href.split('/').pop() || 'download'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  }
+
+  /* This function stops generation by calling /api/killchat */
+  async function stopEverything() {
+    // Call the original stop function
+    stop()
+
+    // Make a call to the /killchat API endpoint
+    try {
+      const response = await fetch('/api/kill-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sandboxID: sandboxID })
+      })
+      const data = await response.text()
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${data}`)
+      }
+    } catch (error) {
+      console.error('Error while calling killchat:', error)
+    }
   }
 
   return (
-
-      <>
-        <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
-          {firstMessageSubmitted ? (
-            !receivedSandboxID ? 
-                <>
-                <div className="flex flex-col justify-center items-center">
-                  <p>Finishing sandbox bootup... </p>
-                  <p><IconSpinner/></p>
-                </div> 
-                </>
-                :
+    <>
+      <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
+        {firstMessageSubmitted ? (
+          !receivedSandboxID ? (
             <>
-              <ChatList messages={messages} agentType={agents['OPEN_INTERPRETER']} handleSandboxLink={handleSandboxLink} isLoading={isLoading} />
-              <ChatScrollAnchor trackVisibility={isLoading} />
+              <div className="flex flex-col justify-center items-center">
+                <p>Finishing sandbox bootup... </p>
+                <p>
+                  <IconSpinner />
+                </p>
+              </div>
             </>
           ) : (
-              <EmptyScreen setInput={setInput} />
-          )}
-        </div>
-
-          <ChatPanel
-            id={id}
-            isLoading={isLoading}
-            stop={stopEverything}
-            reload={reload}
-            messages={messages}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleMessageSubmit}
-            fileUploadOnChange={fileUploadOnChange}
-            fileUploading={fileUploading}
-            loggedIn={loggedIn}
-          />
-        
-        <button 
-          className='fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800'
-          onClick={() => setFeedbackDialogOpen(true)}
-        >
-          <IconFeedback className="w-5 h-5"/>
-        </button>
-        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Feedback Form</DialogTitle>
-            </DialogHeader>
-            <DialogDescription>
-              Please describe the issue you are experiencing:
-            </DialogDescription>
-            <Input
-                  value={feedbackText}
-                  placeholder="Write feedback here"
-                  onChange={e => setFeedbackText(e.target.value)}
+            <>
+              <ChatList
+                messages={messages}
+                agentType={agents['OPEN_INTERPRETER']}
+                handleSandboxLink={handleSandboxLink}
+                isLoading={isLoading}
               />
-              <Button
-                className="px-4 py-2 mt-2 rounded-md w-full sm:max-w-1/3"
-                onClick={() => {
-                  setSendingFeedback(true)
-                  fetch('/api/send-feedback', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ feedback: feedbackText }),
-                  })
-                  .then((response) => {
-                    if(!response.ok) {
-                      throw new Error('Failed to send feedback - refresh the page and try again later')
-                    }
-                    setFeedbackDialogOpen(false)
-                    setFeedbackText("")
-                  })
-                  .catch(err => {
-                    setFeedbackText(err.message)
-                    console.error(err)
-                  })
-                  .finally(() => {
-                    setSendingFeedback(false)
-                  })
-                }}
-              >
-                {sendingFeedback ? <IconSpinner/> :"Submit"}
-              </Button>
-          </DialogContent>
-        </Dialog>
-      </>
+              <ChatScrollAnchor trackVisibility={isLoading} />
+            </>
+          )
+        ) : (
+          <EmptyScreen setInput={setInput} />
+        )}
+      </div>
+
+      <ChatPanel
+        id={id}
+        isLoading={isLoading}
+        stop={stopEverything}
+        reload={reload}
+        messages={messages}
+        input={input}
+        setInput={setInput}
+        handleSubmit={handleMessageSubmit}
+        fileUploadOnChange={fileUploadOnChange}
+        fileUploading={fileUploading}
+        loggedIn={loggedIn}
+      />
+
+      <button
+        className="fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800"
+        onClick={() => setFeedbackDialogOpen(true)}
+      >
+        <IconFeedback className="w-5 h-5" />
+      </button>
+      <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Feedback Form</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Please describe the issue you are experiencing:
+          </DialogDescription>
+          <Input
+            value={feedbackText}
+            placeholder="Write feedback here"
+            onChange={e => setFeedbackText(e.target.value)}
+          />
+          <Button
+            className="px-4 py-2 mt-2 rounded-md w-full sm:max-w-1/3"
+            onClick={() => {
+              setSendingFeedback(true)
+              fetch('/api/send-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feedback: feedbackText })
+              })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(
+                      'Failed to send feedback - refresh the page and try again later'
+                    )
+                  }
+                  setFeedbackDialogOpen(false)
+                  setFeedbackText('')
+                })
+                .catch(err => {
+                  setFeedbackText(err.message)
+                  console.error(err)
+                })
+                .finally(() => {
+                  setSendingFeedback(false)
+                })
+            }}
+          >
+            {sendingFeedback ? <IconSpinner /> : 'Submit'}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
