@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     let res;
     // Check if the environment is development or production
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && process.env.DOCKER === 'local') {
         // call local docker container
         try {
             res = await fetch('http://localhost:8080/killchat')
