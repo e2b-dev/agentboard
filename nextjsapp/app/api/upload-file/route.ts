@@ -44,8 +44,36 @@ export async function POST(req: Request) {
     await sandbox.keepAlive(3 * 60 * 1000) 
     const remotePath = await sandbox.uploadFile(buffer, fileName)
     console.log(`The file was uploaded to '${remotePath}' path inside the sandbox `)
-    await sandbox.close()
     console.log("/upload-file written to E2B filesystem")
+
+    // add message to open interpreter chat history
+    try {
+        const url = "https://" + sandbox.getHostname(8080)
+
+        const res = await fetch(url + '/add_message_no_chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                message: `Uploaded file ${fileName} to ${remotePath}`,
+            })
+        })
+
+        if (!res.ok) {
+            return res
+        }
+        else {
+            return new Response('Message sent', { 
+                status: 200
+            })
+        }
+    } catch (e) {
+        console.log(e)
+        return new Response('Unexpected error', {
+            status: 500
+        })
+    }
     
     return new Response(JSON.stringify({success: true}), {
         status: 200

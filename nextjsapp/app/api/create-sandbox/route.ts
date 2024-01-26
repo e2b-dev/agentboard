@@ -55,7 +55,7 @@ export async function GET() {
             })
         }
         catch (e){
-            return new Response(JSON.stringify({error: 'Unexpected error when calling /create-sandbox'}), {
+            return new Response((JSON.stringify(e)), {
                 status: 500
             })
         }

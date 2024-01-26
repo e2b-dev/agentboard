@@ -84,6 +84,16 @@ def chat_endpoint(chat_message: ChatMessage):
         logger.error(e)
         raise
 
+# used when we want to let open interpreter know we uploaded a file
+@app.post("/add_message_no_chat")
+def add_message_no_chat(chat_message: ChatMessage):
+    try:
+        interpreter.messages.append({"role": "user", "type": "message", "content": chat_message.message})
+        return {"status": "Message added"}
+    except Exception as e:
+        logger.error(e)
+        raise
+
 @app.get("/killchat")
 def kill_chat():
     interpreter.reset()

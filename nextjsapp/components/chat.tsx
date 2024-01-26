@@ -99,8 +99,22 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
 
   /* Stores user file input in pendingFileInputValue */
   async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    // indicate to user that file is uploading
+    
+    const originalMessages = messages
+    const updatedMessages = [
+      ...originalMessages,
+      {
+        id: id || 'default-id',
+        content: `Uploading \`${e.target.files ? e.target.files[0].name : 'file'}\`...`,
+        role: 'user' as 'user'
+      }
+    ]
+    setMessages(updatedMessages)
+
     setFirstMessageSubmitted(true)
     setPendingFileInputValue(e)
+
   }
 
   /* Sends pending file input to sandbox after sandbox is created */
@@ -119,49 +133,37 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
           formData.append('fileName', file.name)
           formData.append('sandboxID', sandboxID)
 
-          const originalMessages = messages
-
-          // indicate to user that file is uploading
-          const updatedMessages = [
-            ...originalMessages,
-            {
-              id: id || 'default-id',
-              content: `Uploading \`${file.name}\`...`,
-              role: 'user' as 'user'
-            }
-          ]
-          setMessages(updatedMessages)
-
+          
           // upload file
           fetch('/api/upload-file', {
             method: 'POST',
             body: formData
           })
-            .then(response => {
+            .then(async response => {
               if (!response.ok) {
                 console.log("Error when uploading file - response not ok")
-                throw new Error('Network response was not ok')
+                const errorText = await response.text()
+                console.log(`Error details: ${errorText}`);
+                throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
               }
 
               // replace file upload message with success message
               let newMessages = [
-                ...originalMessages,
+                ...messages,
                 {
                   id: id || 'default-id',
-                  content: `Uploaded \`${file.name}\`!`,
+                  content: `Uploaded \`${file.name}\` ✅`,
                   role: 'user' as 'user'
                 }
               ]
               setMessages(newMessages)
-
-              return response.json()
             })
             .catch(error => {
               console.error('Error when uploading file:', error)
 
               // replace file upload message with error message
               let newMessages = [
-                ...originalMessages,
+                ...messages,
                 {
                   id: id || 'default-id',
                   content: `Unable to upload \`${file.name}\`!`,
@@ -173,12 +175,16 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
             .finally(() => {
               setPendingFileInputValue(null)
               setFileUploading(false)
+              
+              // required to allow user to upload the same file again
+              pendingFileInputValue.target.value = ''
             })
         }
       }
     }
     executePendingFileUploadEvent()
   }, [receivedSandboxID, pendingFileInputValue])
+
 
   /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -195,14 +201,24 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       handleSubmit(e)
     } else {
       setPendingMessageInputValue(input)
+      const updatedMessages = [
+        ...messages,
+        {
+          id: id || 'default-id',
+          content: input,
+          role: 'user' as 'user'
+        }
+      ]
+      setMessages(updatedMessages)
+      setInput('')
     }
   }
   /* Sends the pending message to sandbox once it is created */
   useEffect(() => {
     const executePendingSubmitEvent = () => {
       if (receivedSandboxID && pendingMessageInputValue) {
-        setInput('')
         track('chat_message_sent')
+        setMessages(messages.slice(0, -1))
         append({
           id,
           content: pendingMessageInputValue,
@@ -216,6 +232,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
 
 
 
+  /* Allows the user to download files from the sandbox */
   const handleSandboxLink = (href: string) => {
     fetch('/api/download-file', {
       method: 'POST',
@@ -266,16 +283,6 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     <>
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
         {firstMessageSubmitted ? (
-          !receivedSandboxID ? (
-            <>
-              <div className="flex flex-col justify-center items-center">
-                <p>Finishing sandbox bootup... </p>
-                <p>
-                  <IconSpinner />
-                </p>
-              </div>
-            </>
-          ) : (
             <>
               <ChatList
                 messages={messages}
@@ -283,10 +290,17 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
                 handleSandboxLink={handleSandboxLink}
                 isLoading={isLoading}
               />
+              {!receivedSandboxID && <>
+                <div className="flex flex-col justify-center items-center">
+                  <p>Finishing sandbox bootup... </p>
+                  <p>
+                    <IconSpinner />
+                  </p>
+                </div>
+              </>}
               <ChatScrollAnchor trackVisibility={isLoading} />
             </>
-          )
-        ) : (
+          ) : (
           <EmptyScreen setInput={setInput} />
         )}
       </div>
