@@ -9,6 +9,7 @@ asttokens==2.4.1
 attrs==23.1.0
 backoff==2.2.1
 blessed==1.20.0
+Brotli==1.1.0
 certifi==2023.11.17
 charset-normalizer==3.3.2
 click==8.1.7
@@ -50,6 +51,7 @@ matplotlib-inline==0.1.6
 mdurl==0.1.2
 monotonic==1.6
 multidict==6.0.4
+mutagen==1.47.0
 nest-asyncio==1.5.8
 numpy==1.26.3
 open-interpreter==0.2.0
@@ -64,6 +66,7 @@ prompt-toolkit==3.0.41
 psutil==5.9.6
 ptyprocess==0.7.0
 pure-eval==0.2.2
+pycryptodomex==3.20.0
 pydantic==2.5.2
 pydantic_core==2.14.5
 Pygments==2.17.2
@@ -71,6 +74,7 @@ pyparsing==3.1.1
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 python-editor==1.0.4
+pytz==2023.3.post1
 PyYAML==6.0.1
 pyzmq==25.1.1
 readchar==4.0.5
@@ -95,7 +99,9 @@ urllib3==2.1.0
 uvicorn==0.24.0.post1
 wcwidth==0.2.12
 websocket-client==1.6.4
+websockets==12.0
 wget==3.2
 yarl==1.9.3
 yaspin==3.0.1
+yt-dlp==2023.12.30
 zipp==3.17.0

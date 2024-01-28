@@ -10,12 +10,12 @@ const exampleMessages = [
     message: `What is the current time in Seattle?`
   },
   {
-    heading: 'Download and summarize a Youtube video',
-    message: 'Download the latest Andrej Karpathy YouTube video and summarize the transcript using OpenAI for me. \n'
+    heading: 'Convert an example .jpg image to .png, then download it',
+    message: 'Convert the image /home/user/agentboard-example.jpg to a png'
   },
   {
-    heading: 'List all of the files in a directory',
-    message: `List all the files in the current working directory \n`
+    heading: 'Extract the audio from a youtube video',
+    message: `Can you extract the audio from this youtube video for me? https://www.youtube.com/watch?v=WTOm65IZneg`
   }
 ]
 

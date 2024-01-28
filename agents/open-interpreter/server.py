@@ -14,9 +14,14 @@ def setup_interpreter(the_interpreter):
     the_interpreter.llm.api_base = "https://proxy-rotps5n5ja-uc.a.run.app/v1"
     the_interpreter.auto_run = True
     the_interpreter.system_message += """
+
+    You already have a few packages installed for you: ffmpeg and yt-dlp. You can use them to download
+    and process video and audio data. Avoid using youtube-dl since its no longer maintained.
+
     Also, whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
-    "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://home/user/<filename>)." If the user asks
-    to download a file, respond with a similar syntax: "Download it here: [<filename>](sandbox://home/user/file.txt)." 
+    "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://home/user/<filename>).". Make sure you 
+     include two slashes after "sandbox". This is because the interpreter will automatically convert the link to a
+     clickable link. If you don't include two slashes, the link will not be clickable.
     """
 
 setup_interpreter(interpreter)
