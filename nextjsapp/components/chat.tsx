@@ -91,7 +91,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     }
   }
 
-  /* Creates sandbox on first load */
+  /* Ensures we only create a sandbox once (even with strictmode doublerendering) */
   const fetchSandboxIDCalled = useRef(false)
   useEffect(() => {
     if (!fetchSandboxIDCalled.current && sandboxID == '' && loggedIn) {
