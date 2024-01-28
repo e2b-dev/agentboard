@@ -14,9 +14,9 @@ def setup_interpreter(the_interpreter):
     the_interpreter.llm.api_base = "https://proxy-rotps5n5ja-uc.a.run.app/v1"
     the_interpreter.auto_run = True
     the_interpreter.system_message += """
-    Whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
-    "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://path/to/file.txt)." If the user asks
-    to download a file, respond with a similar syntax: "Download it here: [<filename>](sandbox://path/to/file.txt)." 
+    Also, whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
+    "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://home/user/<filename>)." If the user asks
+    to download a file, respond with a similar syntax: "Download it here: [<filename>](sandbox://home/user/file.txt)." 
     """
 
 setup_interpreter(interpreter)
