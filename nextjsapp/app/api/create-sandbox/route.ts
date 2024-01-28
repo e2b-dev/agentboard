@@ -29,7 +29,7 @@ export async function GET() {
                 sandbox = await Sandbox.create({ 
                     template: 'e2b-ois-image-dev',
                 })
-                await sandbox.keepAlive(1 * 60 * 1000) 
+                await sandbox.keepAlive(5 * 60 * 1000) 
             }
             else {
                 sandbox = await Sandbox.create({ 
@@ -42,11 +42,11 @@ export async function GET() {
                 cmd: `uvicorn --app-dir /code server:app --host 0.0.0.0 --port 8080`,
             })
             
-
             await new Promise(resolve => setTimeout(resolve, 3000));
 
-
             await sandbox.close()
+
+            console.log("Sandbox created, id: ", sandbox.id)
             return new Response(JSON.stringify({ sandboxID: sandbox.id }), {
                 headers: {
                     'Content-Type': 'application/json'

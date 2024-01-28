@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 import { track } from '@vercel/analytics'
@@ -64,38 +64,41 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     }
   })
 
-  /* Creates sandbox on first load */
-  useEffect(() => {
-    const fetchSandboxID = async () => {
-      if (sandboxID == '') {
-        await fetch('/api/create-sandbox', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+  /* Creates sandbox and stores the sandbox ID */
+  const fetchSandboxID = async () => {
+    if (sandboxID == '') {
+      await fetch('/api/create-sandbox', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}, response: ${JSON.stringify(res)}`)
+          return res.json()
         })
-          .then(res => {
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-            return res.json()
-          })
-          .then(data => {
-            return new Promise(resolve => setTimeout(() => resolve(data), 5000))
-          })
-          .then((data: unknown) => {
-            const sandboxData = data as SandboxData
-            setSandboxID(sandboxData.sandboxID)
-            setTimeout(() => setReceivedSandboxID(true), 5000)
-          })
-          .catch(err => {
-            console.error(err)
-          })
-      }
+        .then(data => {
+          return new Promise(resolve => setTimeout(() => resolve(data), 5000))
+        })
+        .then((data: unknown) => {
+          const sandboxData = data as SandboxData
+          setSandboxID(sandboxData.sandboxID)
+          setTimeout(() => setReceivedSandboxID(true), 5000)
+        })
+        .catch(err => {
+          console.error(err)
+        })
     }
+  }
 
-    if (sandboxID == '' && loggedIn) {
+  /* Creates sandbox on first load */
+  const fetchSandboxIDCalled = useRef(false)
+  useEffect(() => {
+    if (!fetchSandboxIDCalled.current && sandboxID == '' && loggedIn) {
       fetchSandboxID().catch(err => console.error(err))
+      fetchSandboxIDCalled.current = true;
     }
-  }, [sandboxID])
+  }, [sandboxID, loggedIn])
 
   /* Stores user file input in pendingFileInputValue */
   async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement>) {
