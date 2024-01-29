@@ -24,6 +24,29 @@ export async function GET() {
     }
     else{
         try {
+
+            /*
+            Google Cloud Run gets "warmed up" when it receives a request, so we send a dummy request to the API to speed up the first 
+            actual request the user makes after the sandbox is finished starting
+            */
+            fetch('https://proxy-rotps5n5ja-uc.a.run.app/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [{
+                        content: 'This is a test, respond with Hello',
+                        role: 'user'
+                    }],
+                    max_tokens: 10
+                })
+            }).then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error('Error:', error));
+
+
             let sandbox
             if (process.env.NODE_ENV === 'development') {
                 sandbox = await Sandbox.create({ 
