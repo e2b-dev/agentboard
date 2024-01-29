@@ -13,6 +13,8 @@ from interpreter import interpreter
 def setup_interpreter(the_interpreter):
     the_interpreter.llm.api_base = "https://proxy-rotps5n5ja-uc.a.run.app/v1"
     the_interpreter.auto_run = True
+    the_interpreter.llm.model = "gpt-4-0125-preview"
+    the_interpreter.llm.context_window = 8000
     the_interpreter.system_message += """
 
     You already have a few packages installed for you: ffmpeg and yt-dlp. You can use them to download
