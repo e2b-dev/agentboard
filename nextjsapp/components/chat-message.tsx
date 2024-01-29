@@ -8,7 +8,7 @@ import remarkMath from 'remark-math'
 import { cn } from '@/lib/utils'
 import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
-import { IconOpenAI, IconUser, IconOpenInterpreter} from '@/components/ui/icons'
+import { IconOpenAI, IconUser, IconOpenInterpreter, IconDownload} from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
 
 export interface ChatMessageProps {
@@ -50,6 +50,7 @@ export function ChatMessage({ message, agentType, handleSandboxLink, ...props }:
                       onClick={() => handleSandboxLink(href)}
                       className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-white text-black"
                     >
+                      <IconDownload className="mr-1.5 h-5 w-5 text-black" />
                       {children}
                     </button>
                   )
