@@ -16,7 +16,7 @@ def setup_interpreter(the_interpreter):
     the_interpreter.system_message += """
 
     You already have a few packages installed for you: ffmpeg and yt-dlp. You can use them to download
-    and process video and audio data. Avoid using youtube-dl since its no longer maintained.
+    and process some types of video and audio data. Avoid using youtube-dl since its no longer maintained.
 
     Also, whenever a file is written to disk, ALWAYS let the user know by using this EXACT syntax with no deviations:
     "`<filename>` is saved to disk. Download it here: [<filename>](sandbox://home/user/<filename>).". Make sure you 
