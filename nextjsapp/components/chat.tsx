@@ -61,6 +61,9 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       if (response.status === 401) {
         toast.error(response.statusText)
       }
+      else if (response.status === 500) {
+        toast.error("Your sandbox closed after 5 minutes of inactivity. Please refresh the page to start a new sandbox.")
+      }
     }
   })
 
