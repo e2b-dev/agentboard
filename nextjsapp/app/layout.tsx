@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     default: 'Agentboard',
     template: `%s - Agentboard`
   },
-  description: 'Try out AI agents in your browser',
+  description: 'Use AI agents in the browser',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' }
