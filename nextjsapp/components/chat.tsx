@@ -67,6 +67,33 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       else if (response.status === 500) {
         toast.error("Your sandbox closed after 5 minutes of inactivity. Please refresh the page to start a new sandbox.")
       }
+      else {
+        toast.error(`An unexpected ${response.status} error occurred. Please send your message again after reloading.`);
+        // Hopefully this will help debug the rogue 502 and 405 errors
+        fetch('/api/send-feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            errorStatus: response.status,
+            errorMessage: response.statusText,
+            timestamp: new Date().toISOString(),
+          }),
+        })
+        .then(feedbackResponse => {
+          if (!feedbackResponse.ok) {
+            throw new Error('Failed to send feedback');
+          }
+          return feedbackResponse.json();
+        })
+        .catch(feedbackError => {
+          console.error('Error sending feedback:', feedbackError);
+        })
+        .finally(() => {
+          window.location.reload();
+        })
+      }
     }
   })
 
