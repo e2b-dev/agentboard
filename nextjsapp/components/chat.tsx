@@ -44,13 +44,16 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   const [pendingMessageInputValue, setPendingMessageInputValue] = useState<string | null>(null)
 
   /* State for file upload input */
-  const [pendingFileInputValue, setPendingFileInputValue] = useState<React.ChangeEvent<HTMLInputElement> | null>(null)
+  const [pendingFileInputValue, setPendingFileInputValue] = useState<File | null>(null)
   const [fileUploading, setFileUploading] = useState(false)
 
   /* State for feedback dialog */
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [sendingFeedback, setSendingFeedback] = useState(false)
+
+  /* State for dragging files */
+  const [dragging, setDragging] = useState(false)
 
   /* State for chat messages */
   const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } = useChat({
@@ -104,22 +107,22 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   }, [sandboxID, loggedIn])
 
   /* Stores user file input in pendingFileInputValue */
-  async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement> | DragEvent) {
     // indicate to user that file is uploading
     
-    const originalMessages = messages
-    const updatedMessages = [
-      ...originalMessages,
-      {
-        id: id || 'default-id',
-        content: `Uploading \`${e.target.files ? e.target.files[0].name : 'file'}\`...`,
-        role: 'user' as 'user'
-      }
-    ]
-    setMessages(updatedMessages)
-
+    let file : File | undefined | null = null
+    if (e instanceof DragEvent) {
+      file = e.dataTransfer?.files[0]
+    } 
+    else if (e && 'target' in e && e.target.files) {
+      file = e.target.files[0]
+    }
+    else {
+      console.log("Error: fileUploadOnChange called with invalid event type")
+      return
+    }
     setFirstMessageSubmitted(true)
-    setPendingFileInputValue(e)
+    setPendingFileInputValue(file ? file : null)
 
   }
 
@@ -127,16 +130,15 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   useEffect(() => {
     const executePendingFileUploadEvent = () => {
       if (receivedSandboxID && pendingFileInputValue) {
-        if (pendingFileInputValue.target.files) {
+        if (pendingFileInputValue) {
 
           // needed to disable other user input while file is uploading
           setFileUploading(true)
 
           // prepare file for upload
-          const file = pendingFileInputValue.target.files[0]
           const formData = new FormData()
-          formData.append('file', file)
-          formData.append('fileName', file.name)
+          formData.append('file', pendingFileInputValue)
+          formData.append('fileName', pendingFileInputValue.name)
           formData.append('sandboxID', sandboxID)
 
           
@@ -158,7 +160,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
                 ...messages,
                 {
                   id: id || 'default-id',
-                  content: `Uploaded \`${file.name}\` ✅`,
+                  content: `Uploaded \`${pendingFileInputValue.name}\` ✅`,
                   role: 'user' as 'user'
                 }
               ]
@@ -172,7 +174,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
                 ...messages,
                 {
                   id: id || 'default-id',
-                  content: `Unable to upload \`${file.name}\`!`,
+                  content: `Unable to upload \`${pendingFileInputValue.name}\`!`,
                   role: 'user' as 'user'
                 }
               ]
@@ -183,7 +185,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
               setFileUploading(false)
               
               // required to allow user to upload the same file again
-              pendingFileInputValue.target.value = ''
+              // pendingFileInputValue.target.value = ''
             })
         }
       }
@@ -191,6 +193,44 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     executePendingFileUploadEvent()
   }, [receivedSandboxID, pendingFileInputValue])
 
+  /* Attaches listeners to window to allow user to drag and drop files */
+  useEffect(() => {
+    const dragEvents = ['dragenter', 'dragover', 'dragleave', 'drop'];
+    const dragHandler = (event: any) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const dragStartHandler = (event: DragEvent) => {
+      setDragging(true);
+      dragHandler(event);
+    };
+    const dragEndHandler = (event: DragEvent) => {
+      setDragging(false);
+      dragHandler(event);
+    };
+    const dropHandler = (event: DragEvent) => {
+      setDragging(false);
+      if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+        fileUploadOnChange(event);
+        event.dataTransfer.clearData();
+      }
+      dragHandler(event);
+    };
+    dragEvents.forEach(eventName => {
+      window.addEventListener(eventName, dragHandler);
+    });
+    window.addEventListener('dragover', dragStartHandler);
+    window.addEventListener('dragleave', dragEndHandler);
+    window.addEventListener('drop', dropHandler);
+    return () => {
+      dragEvents.forEach(eventName => {
+        window.removeEventListener(eventName, dragHandler);
+      });
+      window.removeEventListener('dragover', dragStartHandler);
+      window.removeEventListener('dragleave', dragEndHandler);
+      window.removeEventListener('drop', dropHandler);
+    };
+  }, []);
 
   /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -235,8 +275,6 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     }
     executePendingSubmitEvent()
   }, [receivedSandboxID, pendingMessageInputValue])
-
-
 
   /* Allows the user to download files from the sandbox */
   const handleSandboxLink = (href: string) => {
@@ -287,6 +325,11 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
 
   return (
     <>
+    {dragging && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 border-4 border-dashed border-green-700">
+        <p className="text-xl font-semibold text-white bg-black bg-opacity-20 p-4">Drop files to upload</p>
+      </div>
+    )}
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
         {firstMessageSubmitted ? (
             <>

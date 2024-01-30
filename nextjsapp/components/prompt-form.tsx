@@ -3,7 +3,7 @@ import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
 import { Button, buttonVariants } from '@/components/ui/button'
-import { IconArrowElbow, IconPlus, IconUpload } from '@/components/ui/icons'
+import { IconArrowElbow, IconSpinner, IconUpload } from '@/components/ui/icons'
 import {
   Tooltip,
   TooltipContent,
@@ -51,7 +51,7 @@ export function PromptForm({
               buttonVariants({ size: 'sm', variant: 'outline' }),
               'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
             )}>
-              <IconUpload />
+              {fileUploading ?  <IconSpinner /> : <IconUpload /> }
               <span className="sr-only">Upload File</span>
             <input
               type="file"
