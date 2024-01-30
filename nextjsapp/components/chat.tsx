@@ -212,6 +212,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       setDragging(false);
       if (event.dataTransfer && event.dataTransfer.files.length > 0) {
         fileUploadOnChange(event);
+        setFileUploading(true)
         event.dataTransfer.clearData();
       }
       dragHandler(event);
