@@ -14,19 +14,18 @@ export async function POST(req: Request) {
     }
 
     const json = await req.json()
-    const { sandboxID, fileName } = json
+    const { sandboxID, filePath } = json
 
-    console.log("filename: " + fileName)
+    console.log("filePath: " + filePath)
     console.log("sandboxID: " + sandboxID)
-    const filepath = fileName.split(":")[1]
 
     const sandbox = await Sandbox.reconnect(sandboxID)
-    const buffer = await sandbox.downloadFile(filepath) 
+    const buffer = await sandbox.downloadFile(filePath) 
 
     return new Response(buffer, {
         headers: {
             'Content-Type': 'application/octet-stream',
-            'Content-Disposition': `attachment; filename=${fileName}`
+            'Content-Disposition': `attachment; filename=${filePath}`
         }
     })
 }

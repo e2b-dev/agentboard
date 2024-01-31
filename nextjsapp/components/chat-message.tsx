@@ -44,7 +44,7 @@ export function ChatMessage({ message, agentType, handleSandboxLink, ...props }:
           components={{
             a({ children, href  }) {
               console.log("chat-message.tsx: a: href: ", href)
-              if (href && href.startsWith('sandbox:/')) {
+              if (href && href.startsWith('/home/user/')) {
                   return (
                     <button
                       onClick={() => handleSandboxLink(href)}

@@ -311,7 +311,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ sandboxID: sandboxID, fileName: href })
+      body: JSON.stringify({ sandboxID: sandboxID, filePath: href })
     })
       .then(response => response.blob())
       .then(blob => {
