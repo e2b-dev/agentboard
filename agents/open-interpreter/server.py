@@ -122,7 +122,8 @@ def chat_endpoint(chat_message: ChatMessage):
 
         return StreamingResponse(event_stream(), media_type="text/event-stream")
     except Exception as e:
-        logger.error(e)
+        print("Exception: ", e)
+        logger.error("Exception:", e)
         raise
 
 # used when we want to let open interpreter know we uploaded a file

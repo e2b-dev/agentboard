@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
     else {
         try {
-            console.log("Attempting to /chat with sandbox id ", sandboxID)
+            console.log(`User ${user.email} sent ${latestMessage} to sandbox id ${sandboxID}`)
             const sandbox = await Sandbox.reconnect(sandboxID) 
             await sandbox.keepAlive(5 * 60 * 1000) 
 

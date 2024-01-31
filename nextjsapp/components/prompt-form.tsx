@@ -19,6 +19,7 @@ export interface PromptProps
   fileUploading: boolean
   isLoading: boolean
   loggedIn: boolean
+  sandboxID: string
 }
 
 export function PromptForm({
@@ -28,7 +29,8 @@ export function PromptForm({
   isLoading,
   fileUploadOnChange,
   fileUploading,
-  loggedIn
+  loggedIn,
+  sandboxID
 }: PromptProps) {
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
@@ -46,7 +48,7 @@ export function PromptForm({
     >
       <div className="relative flex flex-col">
         <div className="flex justify-center items-center pb-1">
-          <p className="text-xs text-gray-500">sandbox-id</p>
+          <p className="text-xs text-gray-500">sandboxID: {sandboxID}</p>
         </div>
         <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
           <Tooltip>

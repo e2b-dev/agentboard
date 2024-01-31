@@ -394,6 +394,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
         fileUploadOnChange={fileUploadOnChange}
         fileUploading={fileUploading}
         loggedIn={loggedIn}
+        sandboxID={sandboxID}
       />
 
       <button
