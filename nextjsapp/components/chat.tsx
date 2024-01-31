@@ -61,6 +61,9 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
     id,
     body: { id, sandboxID },
     onResponse(response) {
+      if (response.ok) {
+        return
+      }
       if (response.status === 401) {
         toast.error(response.statusText)
       }
@@ -75,11 +78,11 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
+          body: JSON.stringify({ feedback: JSON.stringify({
             errorStatus: response.status,
             errorMessage: response.statusText,
             timestamp: new Date().toISOString(),
-          }),
+          })}),
         })
         .then(feedbackResponse => {
           if (!feedbackResponse.ok) {
@@ -89,9 +92,6 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
         })
         .catch(feedbackError => {
           console.error('Error sending feedback:', feedbackError);
-        })
-        .finally(() => {
-          window.location.reload();
         })
       }
     }
