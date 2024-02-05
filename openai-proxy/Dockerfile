@@ -1,8 +1,11 @@
-FROM ghcr.io/berriai/litellm:main
+FROM python:3.11
 
-COPY ./requirements.txt /app/requirements.txt
+WORKDIR /code
 
-RUN apt-get update && apt-get install -y curl && pip install -r /app/requirements.txt
+COPY ./requirements.txt /code/requirements.txt
 
-COPY ./litellm-config.yaml /app/proxy_server_config.yaml
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
+COPY ./litellm-config.yaml /code/litellm-config.yaml
+
+CMD ["litellm", "--config", "litellm-config.yaml", "--debug"]

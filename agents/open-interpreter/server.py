@@ -2,7 +2,18 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import urllib.parse
-import sys
+import sentry_sdk
+sentry_sdk.init(
+    dsn="https://15172662404bb2e4c5e9a1d1190c0ca4@us.sentry.io/4506695976419328",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
+from sentry_sdk import capture_message
 # Why are we pausing for two seconds? Because E2B containers take a while to open up their internet connections,
 # and 'import interpreter' will fail since it require internet access.
 import time
@@ -94,6 +105,7 @@ def chat_endpoint(chat_message: ChatMessage):
             for result in interpreter.chat(chat_message.message, stream=True):
                 
                 print("Result: ", result)
+                capture_message(str(result))
                 if result:
                     # get the first key and value in separate variables
                     yieldval = ""
