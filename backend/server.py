@@ -2,14 +2,66 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import urllib.parse
-
 from interpreter import interpreter
+import e2b
+import logging
+
+
+class PythonE2B:
+    """
+    This class contains all requirements for being a custom language in Open Interpreter:
+
+    - name (an attribute)
+    - run (a method)
+    - stop (a method)
+    - terminate (a method)
+
+    Here, we'll use E2B to power the `run` method.
+    """
+
+    # This is the name that will appear to the LLM.
+    name = "python"
+
+    # Optionally, you can append some information about this language to the system message:
+    system_message = "# Follow this rule: Every Python code block MUST contain at least one print statement."
+
+    # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
+    # instead of putting variables at the end of code blocks, which is a Jupyter thing.)
+
+    def run(self, code):
+        """Generator that yields a dictionary in LMC Format."""
+        yield {
+            "type": "console", "format": "output",
+            "content": "Running code in E2B...\n"
+        }
+        # Run the code on E2B
+        stdout, stderr = e2b.run_code('Python3', code)
+
+        # Yield the output
+        yield {
+            "type": "console", "format": "output",
+            "content": stdout + stderr # We combined these arbitrarily. Yield anything you'd like!
+        }
+
+    def stop(self):
+        """Stops the code."""
+        # Not needed here, because e2b.run_code isn't stateful.
+        pass
+
+    def terminate(self):
+        """Terminates the entire process."""
+        # Not needed here, because e2b.run_code isn't stateful.
+        pass
 
 def setup_interpreter(the_interpreter):
     the_interpreter.auto_run = True
     the_interpreter.llm.model = "gpt-4-0125-preview"
-    # Alternative first sentence: You are a world-class programmer that can complete any goal or task by executing code.
-    # Potentially delete? In general, try to **make plans** with as few steps as possible. 
+    the_interpreter.computer.terminate()
+
+    # Give Open Interpreter its languages. This will only let it run PythonE2B:
+    the_interpreter.computer.languages = [PythonE2B]
+
+    # Try it out!
     the_interpreter.system_message = """    
 
     # Who You Are
@@ -53,9 +105,6 @@ def setup_interpreter(the_interpreter):
 
     """
 
-setup_interpreter(interpreter)
-
-import logging
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
@@ -63,7 +112,6 @@ app = FastAPI()
 
 @app.get("/helloworld")
 def read_root():
-    print(interpreter.system_message)
     try:
         return {"Hello": "World"}
     except Exception as e:
@@ -73,6 +121,7 @@ def read_root():
 @app.get("/chatnostream")
 def chat_endpoint_non_stream(message: str):
     try:
+        setup_interpreter(interpreter)
         return interpreter.chat(message)
     except Exception as e:
         logger.error(e)
@@ -88,7 +137,6 @@ def chat_endpoint(chat_message: ChatMessage):
             for result in interpreter.chat(chat_message.message, stream=True):
                 
                 print("Result: ", result)
-                capture_message(str(result))
                 if result:
                     # get the first key and value in separate variables
                     yieldval = ""
