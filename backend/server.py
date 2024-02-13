@@ -5,61 +5,91 @@ import urllib.parse
 from interpreter import interpreter
 import e2b
 import logging
+from threading import Event
+import time
+import queue
 
 
-class PythonE2B:
-    """
-    This class contains all requirements for being a custom language in Open Interpreter:
+def PythonE2BFactory(sandbox_id):
+    class PythonE2BSpecificSandbox():
+        """
+        This class contains all requirements for being a custom language in Open Interpreter:
 
-    - name (an attribute)
-    - run (a method)
-    - stop (a method)
-    - terminate (a method)
+        - name (an attribute)
+        - run (a method)
+        - stop (a method)
+        - terminate (a method)
 
-    Here, we'll use E2B to power the `run` method.
-    """
+        Here, we'll use E2B to power the `run` method.
+        """
 
-    # This is the name that will appear to the LLM.
-    name = "python"
+        # This is the name that will appear to the LLM.
+        name = "python"
 
-    # Optionally, you can append some information about this language to the system message:
-    system_message = "# Follow this rule: Every Python code block MUST contain at least one print statement."
+        # Optionally, you can append some information about this language to the system message:
+        system_message = "# Follow this rule: Every Python code block MUST contain at least one print statement."
 
-    # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
-    # instead of putting variables at the end of code blocks, which is a Jupyter thing.)
+        # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
+        # instead of putting variables at the end of code blocks, which is a Jupyter thing.)
+        def run_python(self, sandbox, code, on_stdout, on_stderr, on_exit):
+            epoch_time = time.time()
+            codefile_path = f"/tmp/main-{epoch_time}.py"
+            self.filesystem.write(codefile_path, code)
 
-    def run(self, code):
-        """Generator that yields a dictionary in LMC Format."""
-        yield {
-            "type": "console", "format": "output",
-            "content": "Running code in E2B...\n"
-        }
-        # Run the code on E2B
-        stdout, stderr = e2b.run_code('Python3', code)
+            return sandbox.process.start(
+                f"python {codefile_path}",
+                on_stdout=on_stdout,
+                on_stderr=on_stderr,
+                on_exit=on_exit,
+        )
+        def run(self, code):
+            """Generator that yields a dictionary in LMC Format."""
+            yield {
+                "type": "console", "format": "output",
+                "content": "Running code in E2B...\n"
+            }
 
-        # Yield the output
-        yield {
-            "type": "console", "format": "output",
-            "content": stdout + stderr # We combined these arbitrarily. Yield anything you'd like!
-        }
+            exit_event = Event()
+            out_queue = queue.Queue[e2b.ProcessMessage]()
 
-    def stop(self):
-        """Stops the code."""
-        # Not needed here, because e2b.run_code isn't stateful.
-        pass
+            sandbox = e2b.Sandbox.reconnect(sandbox_id)
 
-    def terminate(self):
-        """Terminates the entire process."""
-        # Not needed here, because e2b.run_code isn't stateful.
-        pass
+            self.run_python(
+                sandbox,
+                code,
+                on_stdout=out_queue.put_nowait,
+                on_stderr=out_queue.put_nowait,
+                on_exit=exit_event.set,
+            )
 
-def setup_interpreter(the_interpreter):
+            while not exit_event.is_set() or not out_queue.qsize() == 0:
+                try:
+                    yield {
+                        "type": "console", "format": "output",
+                        "content": out_queue.get_nowait()
+                    }
+                    out_queue.task_done()
+                except queue.Empty:
+                    pass
+        def stop(self):
+            """Stops the code."""
+            # Not needed here, because e2b.run_code isn't stateful.
+            pass
+
+        def terminate(self):
+            """Terminates the entire process."""
+            # Not needed here, because e2b.run_code isn't stateful.
+            pass
+    
+    return PythonE2BSpecificSandbox
+
+def setup_interpreter(the_interpreter, sandbox_id):
     the_interpreter.auto_run = True
     the_interpreter.llm.model = "gpt-4-0125-preview"
     the_interpreter.computer.terminate()
 
     # Give Open Interpreter its languages. This will only let it run PythonE2B:
-    the_interpreter.computer.languages = [PythonE2B]
+    the_interpreter.computer.languages = [PythonE2BFactory(sandbox_id)]
 
     # Try it out!
     the_interpreter.system_message = """    
@@ -110,6 +140,9 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+"""
+Test endpoint. Used to test if the server is running.
+"""
 @app.get("/helloworld")
 def read_root():
     try:
@@ -118,6 +151,9 @@ def read_root():
         logger.error(e)
         raise
 
+"""
+Test endpoint. Uses e2b.run_code(), so not stateful and not user-specific.
+"""
 @app.get("/chatnostream")
 def chat_endpoint_non_stream(message: str):
     try:
@@ -130,8 +166,23 @@ def chat_endpoint_non_stream(message: str):
 class ChatMessage(BaseModel):
     message: str
 @app.post("/chat")
-def chat_endpoint(chat_message: ChatMessage):
+def chat_endpoint(chat_message: ChatMessage, user_id):
     try:
+        # connect to running sandbox - else return an error
+        sandbox_id = None
+        running_sandboxes = e2b.Sandbox.list()
+        for running_sandbox in running_sandboxes:
+            if running_sandbox.metadata.get("userID", "") == user_id:
+                sandbox_id = running_sandbox.sandbox_id
+                break
+        if running_sandbox is None:
+            return {"error": "No running sandbox found for user"}
+
+        # keep alive the sandbox
+        sandbox = e2b.Sandbox.reconnect(sandbox_id)
+        sandbox.keep_alive()
+
+        setup_interpreter(interpreter, sandbox_id)
 
         def event_stream():
             for result in interpreter.chat(chat_message.message, stream=True):
