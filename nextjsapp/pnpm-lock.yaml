@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@e2b/sdk':
-    specifier: ^0.11.16
-    version: 0.11.16(openai@4.20.1)
   '@radix-ui/react-alert-dialog':
     specifier: ^1.0.4
     version: 1.0.4(@types/react-dom@18.2.4)(@types/react@18.2.6)(react-dom@18.2.0)(react@18.2.0)
@@ -59,6 +56,9 @@ dependencies:
   clsx:
     specifier: ^1.2.1
     version: 1.2.1
+  e2b:
+    specifier: ^0.12.1
+    version: 0.12.1(openai@4.20.1)
   focus-trap-react:
     specifier: ^10.1.1
     version: 10.1.1(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
@@ -216,24 +216,6 @@ packages:
       '@babel/helper-string-parser': 7.22.5
       '@babel/helper-validator-identifier': 7.22.5
       to-fast-properties: 2.0.0
-    dev: false
-
-  /@e2b/sdk@0.11.16(openai@4.20.1):
-    resolution: {integrity: sha512-x4fX04SzqWyz4rUD/7IXVmHWGT9N6XBEEQDnhJL9+4SD48UcPp+Bd+/8wMGhWtoiC2uLgwrpC5Hxyn3mPhzdCQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      openai: ^4.17.4
-    dependencies:
-      isomorphic-ws: 5.0.0(ws@8.15.1)
-      normalize-path: 3.0.0
-      openai: 4.20.1
-      openapi-typescript-fetch: 1.1.3
-      path-browserify: 1.0.1
-      platform: 1.3.6
-      ws: 8.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-    optionalDependencies:
-      bufferutil: 4.0.8
-      utf-8-validate: 6.0.3
     dev: false
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.40.0):
@@ -2322,6 +2304,24 @@ packages:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
+    dev: false
+
+  /e2b@0.12.1(openai@4.20.1):
+    resolution: {integrity: sha512-gN3jJtWW5aaKrCQj/25rKuu/0mH9NL4Kk3g2W+K+5VPcg/FlRtNrXdLrJtboGICoC/EtTtAMicL3IhHFhJhwKg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      openai: ^4.17.4
+    dependencies:
+      isomorphic-ws: 5.0.0(ws@8.15.1)
+      normalize-path: 3.0.0
+      openai: 4.20.1
+      openapi-typescript-fetch: 1.1.3
+      path-browserify: 1.0.1
+      platform: 1.3.6
+      ws: 8.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+    optionalDependencies:
+      bufferutil: 4.0.8
+      utf-8-validate: 6.0.3
     dev: false
 
   /eastasianwidth@0.2.0:
