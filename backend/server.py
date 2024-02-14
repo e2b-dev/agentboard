@@ -175,12 +175,12 @@ def chat_endpoint(chat_message: ChatMessage, user_id):
             if running_sandbox.metadata.get("userID", "") == user_id:
                 sandbox_id = running_sandbox.sandbox_id
                 break
-        if running_sandbox is None:
+        if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
 
         # keep alive the sandbox
         sandbox = e2b.Sandbox.reconnect(sandbox_id)
-        sandbox.keep_alive()
+        sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
 
         setup_interpreter(interpreter, sandbox_id)
 
