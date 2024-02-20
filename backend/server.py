@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI 
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,11 +9,7 @@ import logging
 from threading import Event
 import time
 import queue
-from supabase import create_client
-import os
 from typing import List
-
-supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
 
 def PythonE2BFactory(sandbox_id):
@@ -194,16 +190,6 @@ def chat_endpoint_non_stream(message: str):
         logger.error(e)
         raise
 
-async def authenticate_user(token: str = Header(...)):
-    # Supabase setup
-    try:
-        user = supabase.auth.get_user(token)
-        if user.get('id') is None:
-            raise HTTPException(status_code=401, detail="No User ID")
-        return user
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="No User Found")
-    
 # search running sandboxes for the user's sandbox
 def get_user_sandbox(user_id: str):
     running_sandboxes = e2b.Sandbox.list()
