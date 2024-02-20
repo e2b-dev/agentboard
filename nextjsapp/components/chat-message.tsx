@@ -44,10 +44,11 @@ export function ChatMessage({ message, agentType, handleSandboxLink, ...props }:
           components={{
             a({ children, href  }) {
               console.log("chat-message.tsx: a: href: ", href)
-              if (href && href.startsWith('/home/user/')) {
+              if (href && href.includes('/home/user/')) {
+                  const extractedPath = '/home/user/' + href.split('/home/user/')[1];
                   return (
                     <button
-                      onClick={() => handleSandboxLink(href)}
+                      onClick={() => handleSandboxLink(extractedPath)}
                       className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-white text-black"
                     >
                       <IconDownload className="mr-1.5 h-5 w-5 text-black" />

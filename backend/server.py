@@ -35,8 +35,7 @@ def PythonE2BFactory(sandbox_id):
         # Optionally, you can append some information about this language to the system message:
         system_message = """
         # Follow these rules
-        1. If you use Python, each code block MUST contain at least one print statement.
-        2. Code blocks must be completely self contained - they can't rely on variables or imports from previous code blocks.
+        1. Code blocks must be completely self contained - they can't rely on variables or imports from previous code blocks.
         """
 
         # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
@@ -133,7 +132,7 @@ def setup_interpreter(the_interpreter, sandbox_id=None):
     When the goal has been accomplished, tell your boss that you're done.
 
     Whenever a file (referred to as <filename>) is written to disk, ALWAYS let your boss know by using this EXACT syntax with no deviations:
-    "`<filename>` is saved to disk. Download it here: [<filename>](/home/user/<filename>).". This will allow your boss to download the file.
+    "`<filename>` is saved to disk. Download it here: [<filename>](/home/user/<filename>)." This will allow your boss to download the file.
 
     Write messages to your boss in Markdown.
     
