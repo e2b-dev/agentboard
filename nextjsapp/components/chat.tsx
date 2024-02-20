@@ -25,17 +25,16 @@ import { Button } from '@/components/ui/button'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
-  loggedIn: boolean
+  session?: any
 }
 interface SandboxData {
   sandboxID: string
 }
 
-export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
+export function Chat({ id, initialMessages, className, session }: ChatProps) {
 
   /* State for sandbox management */
-  const [sandboxID, setSandboxID] = useState('')
-  const [receivedSandboxID, setReceivedSandboxID] = useState(false)
+  const [sandboxID, setSandboxID] = useState<string | null>(null)
 
   /* State for first message submitted */
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
@@ -59,7 +58,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } = useChat({
     initialMessages,
     id,
-    body: { id, sandboxID },
+    body: { id },
     onResponse(response) {
       if (response.ok) {
         return
@@ -84,22 +83,30 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
             timestamp: new Date().toISOString(),
           })}),
         })
-        .then(feedbackResponse => {
-          if (!feedbackResponse.ok) {
-            throw new Error('Failed to send feedback');
+        .then(async feedbackResponse => {
+          // Check if the response is JSON
+          const contentType = feedbackResponse.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            return feedbackResponse.json();
+          } else {
+            // Handle non-JSON responses
+            return feedbackResponse.text().then(text => ({ message: text }));
           }
-          return feedbackResponse.json();
+        })
+        .then(data => {
+          // Handle the data (JSON or text wrapped in an object)
+          console.log('Feedback response:', data.message);
         })
         .catch(feedbackError => {
           console.error('Error sending feedback:', feedbackError);
-        })
+        });
       }
-    }
+    },
   })
 
   /* Creates sandbox and stores the sandbox ID */
   const fetchSandboxID = async () => {
-    if (sandboxID == '') {
+    if (!sandboxID) {
       await fetch('/api/create-sandbox', {
         method: 'GET',
         headers: {
@@ -110,13 +117,9 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}, response: ${JSON.stringify(res)}`)
           return res.json()
         })
-        .then(data => {
-          return new Promise(resolve => setTimeout(() => resolve(data), 5000))
-        })
         .then((data: unknown) => {
           const sandboxData = data as SandboxData
           setSandboxID(sandboxData.sandboxID)
-          setTimeout(() => setReceivedSandboxID(true), 5000)
         })
         .catch(err => {
           console.error(err)
@@ -125,13 +128,14 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   }
 
   /* Ensures we only create a sandbox once (even with strictmode doublerendering) */
+  // btw, !!session is shorthand for 'logged in'
   const fetchSandboxIDCalled = useRef(false)
   useEffect(() => {
-    if (!fetchSandboxIDCalled.current && sandboxID == '' && loggedIn) {
+    if (!fetchSandboxIDCalled.current && !sandboxID && !!session) {
       fetchSandboxID().catch(err => console.error(err))
       fetchSandboxIDCalled.current = true;
     }
-  }, [sandboxID, loggedIn])
+  }, [sandboxID, !!session])
 
   /* Stores user file input in pendingFileInputValue */
   async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement> | DragEvent) {
@@ -156,7 +160,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   /* Sends pending file input to sandbox after sandbox is created */
   useEffect(() => {
     const executePendingFileUploadEvent = () => {
-      if (receivedSandboxID && pendingFileInputValue) {
+      if (sandboxID && pendingFileInputValue) {
         if (pendingFileInputValue) {
 
           // needed to disable other user input while file is uploading
@@ -218,7 +222,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       }
     }
     executePendingFileUploadEvent()
-  }, [receivedSandboxID, pendingFileInputValue])
+  }, [sandboxID, pendingFileInputValue])
 
   /* Attaches listeners to window to allow user to drag and drop files */
   useEffect(() => {
@@ -270,7 +274,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       setFirstMessageSubmitted(true)
     }
 
-    if (receivedSandboxID) {
+    if (sandboxID) {
       track('chat_message_sent')
       handleSubmit(e)
     } else {
@@ -290,7 +294,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
   /* Sends the pending message to sandbox once it is created */
   useEffect(() => {
     const executePendingSubmitEvent = () => {
-      if (receivedSandboxID && pendingMessageInputValue) {
+      if (sandboxID && pendingMessageInputValue) {
         track('chat_message_sent')
         setMessages(messages.slice(0, -1))
         append({
@@ -302,7 +306,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
       }
     }
     executePendingSubmitEvent()
-  }, [receivedSandboxID, pendingMessageInputValue])
+  }, [sandboxID, pendingMessageInputValue])
 
   /* Allows the user to download files from the sandbox */
   const handleSandboxLink = (href: string) => {
@@ -367,7 +371,7 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
                 handleSandboxLink={handleSandboxLink}
                 isLoading={isLoading}
               />
-              {!receivedSandboxID && <>
+              {!sandboxID && <>
                 <div className="flex flex-col justify-center items-center">
                   <p>Finishing sandbox bootup... </p>
                   <p>
@@ -393,8 +397,8 @@ export function Chat({ id, initialMessages, className, loggedIn }: ChatProps) {
         handleSubmit={handleMessageSubmit}
         fileUploadOnChange={fileUploadOnChange}
         fileUploading={fileUploading}
-        loggedIn={loggedIn}
-        sandboxID={sandboxID}
+        loggedIn={!!session}
+        sandboxID={sandboxID || ''}
       />
 
       <button

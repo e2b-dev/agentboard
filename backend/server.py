@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import urllib.parse
 from interpreter import interpreter
@@ -8,6 +9,11 @@ import logging
 from threading import Event
 import time
 import queue
+from supabase import create_client
+import os
+from typing import List
+
+supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
 
 
 def PythonE2BFactory(sandbox_id):
@@ -27,14 +33,18 @@ def PythonE2BFactory(sandbox_id):
         name = "python"
 
         # Optionally, you can append some information about this language to the system message:
-        system_message = "# Follow this rule: Every Python code block MUST contain at least one print statement."
+        system_message = """
+        # Follow these rules
+        1. If you use Python, each code block MUST contain at least one print statement.
+        2. Code blocks must be completely self contained - they can't rely on variables or imports from previous code blocks.
+        """
 
         # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
         # instead of putting variables at the end of code blocks, which is a Jupyter thing.)
         def run_python(self, sandbox, code, on_stdout, on_stderr, on_exit):
             epoch_time = time.time()
             codefile_path = f"/tmp/main-{epoch_time}.py"
-            self.filesystem.write(codefile_path, code)
+            sandbox.filesystem.write(codefile_path, code)
 
             return sandbox.process.start(
                 f"python {codefile_path}",
@@ -66,7 +76,7 @@ def PythonE2BFactory(sandbox_id):
                 try:
                     yield {
                         "type": "console", "format": "output",
-                        "content": out_queue.get_nowait()
+                        "content": out_queue.get_nowait().line
                     }
                     out_queue.task_done()
                 except queue.Empty:
@@ -135,10 +145,23 @@ def setup_interpreter(the_interpreter, sandbox_id):
 
     """
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+origins = [
+    "http://localhost:3000",
+    "https://agentboard.dev",
+    "https://agentboard-git-staging-e2b.vercel.app/"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 """
 Test endpoint. Used to test if the server is running.
@@ -163,29 +186,49 @@ def chat_endpoint_non_stream(message: str):
         logger.error(e)
         raise
 
-class ChatMessage(BaseModel):
-    message: str
-@app.post("/chat")
-def chat_endpoint(chat_message: ChatMessage, user_id):
+async def authenticate_user(token: str = Header(...)):
+    # Supabase setup
     try:
-        # connect to running sandbox - else return an error
+        user = supabase.auth.get_user(token)
+        if user.get('id') is None:
+            raise HTTPException(status_code=401, detail="No User ID")
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="No User Found")
+
+class UserMessage(BaseModel):
+    role: str
+    content: str
+class ChatRequest(BaseModel):
+    messages: List[UserMessage]
+    user_id: str
+@app.post("/chat")
+async def chat_endpoint(chat_request: ChatRequest):
+    logger.info("Latest chat message: " + str(chat_request.messages[-1].content))
+    logger.info("User ID: " + str(chat_request.user_id))
+
+    try:
+        # search running sandboxes for the user's sandbox
         sandbox_id = None
         running_sandboxes = e2b.Sandbox.list()
         for running_sandbox in running_sandboxes:
-            if running_sandbox.metadata.get("userID", "") == user_id:
+            if running_sandbox.metadata and running_sandbox.metadata.get("userID", "") == chat_request.user_id:
                 sandbox_id = running_sandbox.sandbox_id
                 break
         if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
 
+        logger.info("Connected to sandboxID: " + str(sandbox_id))
+
         # keep alive the sandbox
         sandbox = e2b.Sandbox.reconnect(sandbox_id)
         sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
 
+        # configure Open Interpreter to execute all code in E2B Sandbox
         setup_interpreter(interpreter, sandbox_id)
 
         def event_stream():
-            for result in interpreter.chat(chat_message.message, stream=True):
+            for result in interpreter.chat(chat_request.messages[-1].content, stream=True):
                 
                 print("Result: ", result)
                 if result:
@@ -221,10 +264,12 @@ def chat_endpoint(chat_message: ChatMessage, user_id):
         raise
 
 # used when we want to let open interpreter know we uploaded a file
+# TODO: Remove this, just store the knowledge of the file upload locally until the 
+# /chat endpoint is called with the added message history
 @app.post("/add_message_no_chat")
-def add_message_no_chat(chat_message: ChatMessage):
+def add_message_no_chat(chat_request: ChatRequest):
     try:
-        interpreter.messages.append({"role": "user", "type": "message", "content": chat_message.message})
+        interpreter.messages.append({"role": "user", "type": "message", "content": chat_request.messages[-1].content})
         return {"status": "Message added"}
     except Exception as e:
         logger.error(e)

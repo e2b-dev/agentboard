@@ -1,5 +1,5 @@
 import { AIStream, StreamingTextResponse } from 'ai'
-import { Sandbox } from '@e2b/sdk'
+import { Sandbox } from 'e2b'
 import { parseOpenInterpreterStream } from '@/lib/stream-parsers'
 import { nanoid } from 'nanoid'
 import { createClient } from "@/utils/supabase/server";

@@ -19,10 +19,10 @@ export async function GET() {
             metadata: { userID: user.id }
         })
         if (process.env.NODE_ENV === 'development') {
-            await sandbox.keepAlive(5 * 60 * 1000) 
+            await sandbox.keepAlive(5 * 60 * 1000) // 5 minutes 
         }
         else {
-            await sandbox.keepAlive(60 * 60 * 1000) 
+            await sandbox.keepAlive(60 * 60 * 1000) // 1 hour
         }
 
         await sandbox.close()

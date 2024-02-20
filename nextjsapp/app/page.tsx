@@ -10,14 +10,16 @@ export default async function IndexPage() {
   // check if there is a session - if not, render the Anon Shield
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
+
   const {data: {session}} = await supabase.auth.getSession()
+  
 
   const id = nanoid()
 
   return (
     <>
       {!session && <AnonShield/>}
-      <Chat id={id} loggedIn={!!session}/>
+      <Chat id={id} session={session}/>
     </>
   )
 }
