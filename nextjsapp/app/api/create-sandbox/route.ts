@@ -13,17 +13,24 @@ export async function GET() {
         })
     }
 
-    try {
-        let sandbox = await Sandbox.create({
-            template: 'ois-code-execution-sandbox',
-            metadata: { userID: user.id }
-        })
-        if (process.env.NODE_ENV === 'development') {
-            await sandbox.keepAlive(5 * 60 * 1000) // 5 minutes 
+    try {  
+        // connect to existing sandbox or create a new one
+        let sandbox;
+        const runningSandboxes = await Sandbox.list()
+        const found = runningSandboxes.find(s => s.metadata?.userID === user.id)
+        if (found) {
+            // Sandbox found, we can reconnect to it
+            sandbox = await Sandbox.reconnect(found.sandboxID)
+        } else {
+            // Sandbox not found, create a new one
+            sandbox = await Sandbox.create({
+                template: 'ois-code-execution-sandbox',
+                metadata: { userID: user.id }
+            })
         }
-        else {
-            await sandbox.keepAlive(60 * 60 * 1000) // 1 hour
-        }
+
+        // 5 minutes in development, 1 hour in production
+        await sandbox.keepAlive(process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 60 * 60 * 1000) 
 
         await sandbox.close()
 

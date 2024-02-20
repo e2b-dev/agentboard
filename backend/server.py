@@ -62,15 +62,23 @@ def PythonE2BFactory(sandbox_id):
             exit_event = Event()
             out_queue = queue.Queue[e2b.ProcessMessage]()
 
-            sandbox = e2b.Sandbox.reconnect(sandbox_id)
+            if sandbox_id is None: # Used only by the /chatnostream endpoint
+                stdout, stderr = e2b.run_code('Python3', code)
+                # Yield the output
+                yield {
+                    "type": "console", "format": "output",
+                    "content": stdout + stderr # We combined these arbitrarily. Yield anything you'd like!
+                }
+            else:
+                sandbox = e2b.Sandbox.reconnect(sandbox_id)
 
-            self.run_python(
-                sandbox,
-                code,
-                on_stdout=out_queue.put_nowait,
-                on_stderr=out_queue.put_nowait,
-                on_exit=exit_event.set,
-            )
+                self.run_python(
+                    sandbox,
+                    code,
+                    on_stdout=out_queue.put_nowait,
+                    on_stderr=out_queue.put_nowait,
+                    on_exit=exit_event.set,
+                )
 
             while not exit_event.is_set() or not out_queue.qsize() == 0:
                 try:
@@ -93,7 +101,7 @@ def PythonE2BFactory(sandbox_id):
     
     return PythonE2BSpecificSandbox
 
-def setup_interpreter(the_interpreter, sandbox_id):
+def setup_interpreter(the_interpreter, sandbox_id=None):
     the_interpreter.auto_run = True
     the_interpreter.llm.model = "gpt-4-0125-preview"
     the_interpreter.computer.terminate()
@@ -154,6 +162,7 @@ origins = [
     "http://localhost:3000",
     "https://agentboard.dev",
     "https://agentboard-git-staging-e2b.vercel.app/"
+    "https://agentboard-git-dev-e2b.vercel.app/"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -167,7 +176,7 @@ app.add_middleware(
 Test endpoint. Used to test if the server is running.
 """
 @app.get("/helloworld")
-def read_root():
+def hello_world():
     try:
         return {"Hello": "World"}
     except Exception as e:
@@ -195,6 +204,14 @@ async def authenticate_user(token: str = Header(...)):
         return user
     except Exception as e:
         raise HTTPException(status_code=401, detail="No User Found")
+    
+# search running sandboxes for the user's sandbox
+def get_user_sandbox(user_id: str):
+    running_sandboxes = e2b.Sandbox.list()
+    for running_sandbox in running_sandboxes:
+        if running_sandbox.metadata and running_sandbox.metadata.get("userID", "") == user_id:
+            return running_sandbox.sandbox_id
+    return None
 
 class UserMessage(BaseModel):
     role: str
@@ -204,27 +221,16 @@ class ChatRequest(BaseModel):
     user_id: str
 @app.post("/chat")
 async def chat_endpoint(chat_request: ChatRequest):
-    logger.info("Latest chat message: " + str(chat_request.messages[-1].content))
-    logger.info("User ID: " + str(chat_request.user_id))
-
     try:
-        # search running sandboxes for the user's sandbox
-        sandbox_id = None
-        running_sandboxes = e2b.Sandbox.list()
-        for running_sandbox in running_sandboxes:
-            if running_sandbox.metadata and running_sandbox.metadata.get("userID", "") == chat_request.user_id:
-                sandbox_id = running_sandbox.sandbox_id
-                break
+        sandbox_id = get_user_sandbox(chat_request.user_id)
         if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
-
-        logger.info("Connected to sandboxID: " + str(sandbox_id))
 
         # keep alive the sandbox
         sandbox = e2b.Sandbox.reconnect(sandbox_id)
         sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
 
-        # configure Open Interpreter to execute all code in E2B Sandbox
+        # configure Open Interpreter to execute all code in user's E2B Sandbox
         setup_interpreter(interpreter, sandbox_id)
 
         def event_stream():
@@ -263,18 +269,23 @@ async def chat_endpoint(chat_request: ChatRequest):
         logger.error("Exception:", e)
         raise
 
-# used when we want to let open interpreter know we uploaded a file
-# TODO: Remove this, just store the knowledge of the file upload locally until the 
-# /chat endpoint is called with the added message history
+'''
+This is used to notify Open Interpreter that we've uploaded a file to the E2B filesystem.
+We can't just sync the frontend message history with Open Interpreter with every /chat, 
+because Open Interpreter adds an extra field "type" to its message history.
+
+So it's best to let Open Interpreter manage its own message history, and we'll just take care of adding this one manually.
+'''
+class ChatMessage(BaseModel):
+    message: str
 @app.post("/add_message_no_chat")
-def add_message_no_chat(chat_request: ChatRequest):
+def add_message_no_chat(chat_message: ChatMessage):
     try:
-        interpreter.messages.append({"role": "user", "type": "message", "content": chat_request.messages[-1].content})
-        return {"status": "Message added"}
+        interpreter.messages.append({"role": "user", "type": "message", "content": chat_message.message})
+        return {"status": "Message added to interpreter"}
     except Exception as e:
         logger.error(e)
         raise
-
 @app.get("/killchat")
 def kill_chat():
     interpreter.reset()

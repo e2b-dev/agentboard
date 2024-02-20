@@ -152,6 +152,15 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       console.log("Error: fileUploadOnChange called with invalid event type")
       return
     }
+    let newMessages = [
+      ...messages,
+      {
+        id: id || 'default-id',
+        content: `Uploading \`${file?.name}\` ...`,
+        role: 'user' as 'user'
+      }
+    ]
+    setMessages(newMessages)
     setFirstMessageSubmitted(true)
     setPendingFileInputValue(file ? file : null)
 

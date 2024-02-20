@@ -1,4 +1,4 @@
-import { Sandbox } from '@e2b/sdk'
+import { Sandbox } from 'e2b'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers';
 

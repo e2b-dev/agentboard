@@ -41,6 +41,12 @@ export function PromptForm({
     }
   }, [])
 
+  React.useEffect(() => {
+    if (!fileUploading && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [fileUploading])
+
   return (
     <form
       onSubmit={handleSubmit}
