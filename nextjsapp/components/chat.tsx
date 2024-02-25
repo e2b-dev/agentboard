@@ -46,7 +46,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
 
   /* State for text input */
-  const [pendingMessageInputValue, setPendingMessageInputValue] = useState<string | null>(null)
+  const [pendingMessagesValue, setPendingMessagesValue] = useState<Message[]| null>(null)
 
   /* State for file upload input */
   const [pendingFileInputValue, setPendingFileInputValue] = useState<File | null>(null)
@@ -285,6 +285,71 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     };
   }, []);
 
+  const submitAndUpdateMessages = async (updatedMessages: Message[]) => {
+    
+    // If the session has an expired access token, this method will use the refresh token to get a new session.
+    const { data: {session} } = await supabase.auth.getSession()
+
+    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat'
+
+    // call the /chat API endpoint
+    const res = await fetch(chat_endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({
+        messages: updatedMessages,
+      }),
+    })
+    
+    // check if response was ok
+    if (!res.ok) {
+      console.error(`/chat HTTP error! status: ${res.status}`)
+      return
+    }
+
+    // parse stream response
+    const reader = res.body?.getReader()
+    const previousMessages = JSON.parse(JSON.stringify(updatedMessages))
+    let messageBuffer = ''
+    const textDecoder = new TextDecoder()
+    if (reader) {
+
+      // keep reading from stream until done
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          setChatResponseLoading(false)
+          break;
+        }
+        const text = textDecoder.decode(value);
+        let fullyFormattedText = decodeURIComponent(text)
+
+        // use regex to parse out the data between the start and end tokens
+        const matches = fullyFormattedText.match(regexPattern);
+        if (!matches) {
+          continue
+        }
+        
+        // split the data into chunks
+        const chunks = matches.map(match => match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), ''));
+
+        // process each chunk individually
+        for (const chunk of chunks) {
+          messageBuffer += chunk
+          const lastMessage = {
+            id: id || 'default-id',
+            content: messageBuffer,
+            role: 'assistant' as 'assistant'
+          }
+          setMessages([...previousMessages, lastMessage]);
+
+        }
+      }
+    }
+  }
   /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -296,12 +361,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       setFirstMessageSubmitted(true)
     }
 
-    // If the session has an expired access token, this method will use the refresh token to get a new session.
-    const { data: {session} } = await supabase.auth.getSession()
-
-    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat'
-
-    // render the user message in the chat
+    // add user message to the messages array
     const updatedMessages = [
       ...messages,
       {
@@ -316,87 +376,25 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     if (sandboxID) {
       track('chat_message_sent')
 
-      // get the response from the sandbox
-      const res = await fetch(chat_endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          messages: updatedMessages,
-        }),
-      })
-      
-      // check if response was ok
-      if (!res.ok) {
-        console.error(`/chat HTTP error! status: ${res.status}`)
-        return
-      }
-
-      const reader = res.body?.getReader()
-      const previousMessages = JSON.parse(JSON.stringify(updatedMessages))
-      let messageBuffer = ''
-      const textDecoder = new TextDecoder()
-      if (reader) {
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            setChatResponseLoading(false)
-            break;
-          }
-          const text = textDecoder.decode(value);
-          let fullyFormattedText = decodeURIComponent(text)
-
-          const matches = fullyFormattedText.match(regexPattern);
-          if (!matches) {
-            continue
-          }
-          
-          const chunks = matches.map(match => match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), ''));
-          for (const chunk of chunks) {
-            messageBuffer += chunk
-            const lastMessage = {
-              id: id || 'default-id',
-              content: messageBuffer,
-              role: 'assistant' as 'assistant'
-            }
-            setMessages([...previousMessages, lastMessage]);
-
-          }
-        }
-      }
+      // get the response from the sandbox with the updates messages array
+      submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
      
     } else {
-      setPendingMessageInputValue(input)
+      setPendingMessagesValue(updatedMessages)
       
     }
   }
   /* Sends the pending message to sandbox once it is created */
   useEffect(() => {
     const executePendingSubmitEvent = async () => {
-      if (sandboxID && pendingMessageInputValue) {
+      if (sandboxID && pendingMessagesValue) {
         track('chat_message_sent')
-        setMessages(messages.slice(0, -1))
-        const { data: {session} } = await supabase.auth.getSession()
-
-        append({
-          id,
-          content: pendingMessageInputValue,
-          role: 'user'
-        },
-        {
-          options: {
-            headers: {
-              'Authorization': `Bearer ${session?.access_token}`
-            }
-          }
-        })
-        setPendingMessageInputValue(null)
+        submitAndUpdateMessages(pendingMessagesValue).catch(err => console.error(err))
+        setPendingMessagesValue(null)
       }
     }
     executePendingSubmitEvent()
-  }, [sandboxID, pendingMessageInputValue])
+  }, [sandboxID, pendingMessagesValue])
 
   /* Allows the user to download files from the sandbox */
   const handleSandboxLink = (href: string) => {
