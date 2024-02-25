@@ -10,6 +10,7 @@ import { CodeBlock } from '@/components/ui/codeblock'
 import { MemoizedReactMarkdown } from '@/components/markdown'
 import { IconOpenAI, IconUser, IconOpenInterpreter, IconDownload} from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
+import {parseOpenInterpreterStream} from '@/lib/stream-parsers'
 
 export interface ChatMessageProps {
   message: Message
@@ -18,7 +19,6 @@ export interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, agentType, handleSandboxLink, ...props }: ChatMessageProps) {
-
 
   return (
     <div

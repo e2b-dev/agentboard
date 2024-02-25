@@ -32,6 +32,11 @@ interface SandboxData {
   sandboxID: string
 }
 
+const startToken = "AI<ST>"
+const endToken = "AI<ET>"
+const regexPattern = new RegExp(`${startToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(.*?)${endToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gs');
+
+
 export function Chat({ id, initialMessages, className, session }: ChatProps) {
 
   /* State for sandbox management */
@@ -55,9 +60,11 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   /* State for dragging files */
   const [dragging, setDragging] = useState(false)
 
-  const supabase = createClient()
+  /* State for chatStreaming */
+  const [chatResponseLoading, setChatResponseLoading] = useState(false)
 
-  const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } = useChat({
+  /* Chat state management */
+  const { messages, reload, stop, append, input, setInput, setMessages } = useChat({
     initialMessages,
     id,
     api: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat',
@@ -107,6 +114,8 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     },
   })
 
+  const supabase = createClient()
+  
   /* Creates sandbox and stores the sandbox ID */
   const fetchSandboxID = async () => {
     if (!sandboxID) {
@@ -279,6 +288,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setChatResponseLoading(true)
     if (!input?.trim()) {
       return
     }
@@ -289,32 +299,77 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
 
+    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat'
+
+    // render the user message in the chat
+    const updatedMessages = [
+      ...messages,
+      {
+        id: id || 'default-id',
+        content: input,
+        role: 'user' as 'user'
+      }
+    ]
+    setMessages(updatedMessages)
+    setInput('')
+
     if (sandboxID) {
       track('chat_message_sent')
-      append({
-        id,
-        content: input,
-        role: 'user',
-      },
-      {
-        options: {
-          headers: {
-            'Authorization': `Bearer ${session?.access_token}`
+
+      // get the response from the sandbox
+      const res = await fetch(chat_endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          messages: updatedMessages,
+        }),
+      })
+      
+      // check if response was ok
+      if (!res.ok) {
+        console.error(`/chat HTTP error! status: ${res.status}`)
+        return
+      }
+
+      const reader = res.body?.getReader()
+      const previousMessages = JSON.parse(JSON.stringify(updatedMessages))
+      let messageBuffer = ''
+      const textDecoder = new TextDecoder()
+      if (reader) {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            setChatResponseLoading(false)
+            break;
+          }
+          const text = textDecoder.decode(value);
+          let fullyFormattedText = decodeURIComponent(text)
+
+          const matches = fullyFormattedText.match(regexPattern);
+          if (!matches) {
+            continue
+          }
+          
+          const chunks = matches.map(match => match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), ''));
+          for (const chunk of chunks) {
+            messageBuffer += chunk
+            const lastMessage = {
+              id: id || 'default-id',
+              content: messageBuffer,
+              role: 'assistant' as 'assistant'
+            }
+            setMessages([...previousMessages, lastMessage]);
+
           }
         }
-      })
+      }
+     
     } else {
       setPendingMessageInputValue(input)
-      const updatedMessages = [
-        ...messages,
-        {
-          id: id || 'default-id',
-          content: input,
-          role: 'user' as 'user'
-        }
-      ]
-      setMessages(updatedMessages)
-      setInput('')
+      
     }
   }
   /* Sends the pending message to sandbox once it is created */
@@ -407,7 +462,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
                 messages={messages}
                 agentType={agents['OPEN_INTERPRETER']}
                 handleSandboxLink={handleSandboxLink}
-                isLoading={isLoading}
+                isLoading={chatResponseLoading}
               />
               {!sandboxID && <>
                 <div className="flex flex-col justify-center items-center">
@@ -417,7 +472,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
                   </p>
                 </div>
               </>}
-              <ChatScrollAnchor trackVisibility={isLoading} />
+              <ChatScrollAnchor trackVisibility={chatResponseLoading} />
             </>
           ) : (
           <EmptyScreen setInput={setInput} />
@@ -426,7 +481,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
 
       <ChatPanel
         id={id}
-        isLoading={isLoading}
+        isLoading={chatResponseLoading}
         stop={stopEverything}
         reload={reload}
         messages={messages}

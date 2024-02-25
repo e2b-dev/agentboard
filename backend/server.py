@@ -17,6 +17,8 @@ from supabase import create_client
 
 # Supabase client
 supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_KEY"))
+AI_START_TOKEN = "AI<ST>"
+AI_END_TOKEN = "AI<ET>"
 
 
 def PythonE2BFactory(sandbox_id):
@@ -199,7 +201,7 @@ def chat_endpoint_non_stream(message: str):
         raise
 
 
-async def token_for_user_id(token: str) -> Optional[str]:
+async def user_id_for_token(token: str) -> Optional[str]:
     """
     Authenticate the token with Supabase and return the user ID if valid.
     """
@@ -216,7 +218,7 @@ async def token_for_user_id(token: str) -> Optional[str]:
         logger.error(f"Supabase error when exchanging token for user id: {e}")
         return None
 
-def get_user_sandbox(user_id: str):
+def sandbox_id_for_user_id(user_id: str):
     """
     Search running sandboxes for the user's sandbox
     """
@@ -240,7 +242,7 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
 
         # Exchange token for user ID 
         start_time = time.time()
-        user_id = await token_for_user_id(authorization)
+        user_id = await user_id_for_token(authorization)
         if not user_id:
             logger.error("Invalid token")
             raise HTTPException(status_code=401, detail="Invalid token") 
@@ -248,7 +250,7 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
 
         # Exchange user ID for sandbox ID
         start_time = time.time()
-        sandbox_id = get_user_sandbox(user_id)
+        sandbox_id = sandbox_id_for_user_id(user_id)
         if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
         logger.info(f"Time to get sandbox id: {time.time() - start_time}")
@@ -287,12 +289,13 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
                         elif 'format' in result and result["format"] == 'output':
                             yieldval = result["content"]
                     else:
-                        yieldval = "\n\n\n"
+                        logger.info(f"UNEXPECTED TYPE: {result['type']}")
+                        logger.info(f"FULL RESULT OF UNEXPECTED TYPE: {result}")
                     if not first_response_sent:
                         first_response_sent = True
                         logger.info(f"/chat: First response sent in {time.time() - start_time}")
-                    yield f"data: {urllib.parse.quote(str(yieldval))}\n\n"
-                    
+                    yield f"{AI_START_TOKEN}{urllib.parse.quote(str(yieldval))}{AI_END_TOKEN}"
+
         start_time = time.time()
         return StreamingResponse(event_stream(start_time), media_type="text/event-stream")
     except Exception as e:
