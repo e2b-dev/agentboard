@@ -10,6 +10,7 @@ import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
+import { createClient } from '@/utils/supabase/client'
 
 import {
   Dialog,
@@ -24,7 +25,7 @@ import { Button } from '@/components/ui/button'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
-  id?: string
+  id?: string, 
   session?: any
 }
 interface SandboxData {
@@ -54,10 +55,12 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   /* State for dragging files */
   const [dragging, setDragging] = useState(false)
 
-  /* State for chat messages */
+  const supabase = createClient()
+
   const { messages, append, reload, stop, isLoading, input, setInput, handleSubmit, setMessages } = useChat({
     initialMessages,
     id,
+    api: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat',
     body: { id },
     onResponse(response) {
       if (response.ok) {
@@ -283,9 +286,23 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       setFirstMessageSubmitted(true)
     }
 
+    // If the session has an expired access token, this method will use the refresh token to get a new session.
+    const { data: {session} } = await supabase.auth.getSession()
+
     if (sandboxID) {
       track('chat_message_sent')
-      handleSubmit(e)
+      append({
+        id,
+        content: input,
+        role: 'user',
+      },
+      {
+        options: {
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`
+          }
+        }
+      })
     } else {
       setPendingMessageInputValue(input)
       const updatedMessages = [
@@ -302,14 +319,23 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   }
   /* Sends the pending message to sandbox once it is created */
   useEffect(() => {
-    const executePendingSubmitEvent = () => {
+    const executePendingSubmitEvent = async () => {
       if (sandboxID && pendingMessageInputValue) {
         track('chat_message_sent')
         setMessages(messages.slice(0, -1))
+        const { data: {session} } = await supabase.auth.getSession()
+
         append({
           id,
           content: pendingMessageInputValue,
           role: 'user'
+        },
+        {
+          options: {
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`
+            }
+          }
         })
         setPendingMessageInputValue(null)
       }

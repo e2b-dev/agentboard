@@ -1,15 +1,22 @@
-from fastapi import FastAPI 
+import urllib.parse
+import logging
+import os
+import time
+import queue
+from typing import List, Optional
+from threading import Event
+
+from fastapi import FastAPI, Header, HTTPException 
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import urllib.parse
+
 from interpreter import interpreter
 import e2b
-import logging
-from threading import Event
-import time
-import queue
-from typing import List
+from supabase import create_client
+
+# Supabase client
+supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_KEY"))
 
 
 def PythonE2BFactory(sandbox_id):
@@ -191,8 +198,28 @@ def chat_endpoint_non_stream(message: str):
         logger.error(e)
         raise
 
-# search running sandboxes for the user's sandbox
+
+async def token_for_user_id(token: str) -> Optional[str]:
+    """
+    Authenticate the token with Supabase and return the user ID if valid.
+    """
+    # Remove 'Bearer ' prefix if present
+    if token.startswith("Bearer "):
+        token = token[7:]
+        logger.info(f"Request Token: {token}")
+    # Verify the token with Supabase
+    try:
+        data = supabase.auth.get_user(token)
+        if data:
+            return data.user.id
+    except Exception as e:
+        logger.error(f"Supabase error when exchanging token for user id: {e}")
+        return None
+
 def get_user_sandbox(user_id: str):
+    """
+    Search running sandboxes for the user's sandbox
+    """
     running_sandboxes = e2b.Sandbox.list()
     for running_sandbox in running_sandboxes:
         if running_sandbox.metadata and running_sandbox.metadata.get("userID", "") == user_id:
@@ -204,22 +231,37 @@ class UserMessage(BaseModel):
     content: str
 class ChatRequest(BaseModel):
     messages: List[UserMessage]
-    user_id: str
 @app.post("/chat")
-async def chat_endpoint(chat_request: ChatRequest):
+async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(None)):
     try:
-        sandbox_id = get_user_sandbox(chat_request.user_id)
+        if not authorization:
+            logger.error("No authorization header")
+            raise HTTPException(status_code=401, detail="No authorization header")
+
+        # Exchange token for user ID 
+        start_time = time.time()
+        user_id = await token_for_user_id(authorization)
+        if not user_id:
+            logger.error("Invalid token")
+            raise HTTPException(status_code=401, detail="Invalid token") 
+        logger.info(f"Time to get user id: {time.time() - start_time}")
+
+        # Exchange user ID for sandbox ID
+        start_time = time.time()
+        sandbox_id = get_user_sandbox(user_id)
         if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
+        logger.info(f"Time to get sandbox id: {time.time() - start_time}")
 
-        # keep alive the sandbox
+        # Connect to the sandbox, keep it alive, and setup interpreter
+        start_time = time.time()
         sandbox = e2b.Sandbox.reconnect(sandbox_id)
         sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
-
-        # configure Open Interpreter to execute all code in user's E2B Sandbox
         setup_interpreter(interpreter, sandbox_id)
+        logger.info(f"Time to connect to sandbox, keep alive, and setup interpreter: {time.time() - start_time}")
 
-        def event_stream():
+        def event_stream(start_time):
+            first_response_sent = False
             for result in interpreter.chat(chat_request.messages[-1].content, stream=True):
                 
                 print("Result: ", result)
@@ -246,16 +288,23 @@ async def chat_endpoint(chat_request: ChatRequest):
                             yieldval = result["content"]
                     else:
                         yieldval = "\n\n\n"
-                        
+                    if not first_response_sent:
+                        first_response_sent = True
+                        logger.info(f"/chat: First response sent in {time.time() - start_time}")
                     yield f"data: {urllib.parse.quote(str(yieldval))}\n\n"
-
-        return StreamingResponse(event_stream(), media_type="text/event-stream")
+                    
+        start_time = time.time()
+        return StreamingResponse(event_stream(start_time), media_type="text/event-stream")
     except Exception as e:
         print("Exception: ", e)
         logger.error("Exception:", e)
         raise
 
 '''
+TODO: THIS IS FALSE, SERVER CALLS MUST BE STATELESS OTHERWISE USERS WILL ACCESS 
+EACH OTHERS MESSAGES. SO WE MUST FIND A WAY TO SYNC MESSAGE HISTORY WITH EVERY CALL,
+AND GET RID OF THIS FUNCTION
+==
 This is used to notify Open Interpreter that we've uploaded a file to the E2B filesystem.
 We can't just sync the frontend message history with Open Interpreter with every /chat, 
 because Open Interpreter adds an extra field "type" to its message history.

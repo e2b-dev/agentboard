@@ -11,25 +11,25 @@ export function GithubLoginButton({ ...props}) {
   const supabase = createClient()
   const [isLoading, setIsLoading] = React.useState(false)
 
+  signIn = async (provider) => {
+    setIsLoading(true)
+    const { error } = await supabase.auth.signInWithOAuth({ 
+      provider: provider,
+      redirectTo: window.location.origin + '/auth/callback'
+    })
+    if (error) {
+      console.error('Error signing in:', error.message)
+      setIsLoading(false)
+    }
+    else {
+      router.push('/')
+    }
+  }
+
   return (
     <Button
       variant="outline"
-      onClick={async () => {
-        setIsLoading(true)
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'github',
-            options: {
-              redirectTo: window.location.origin + '/auth/callback'
-            }
-        })
-        if (error){
-          console.error('Error signing in:', error.message)
-          setIsLoading(false)
-        }
-        
-        else router.push('/')
-
-      }}
+      onClick={() => signIn('github')}
       disabled={isLoading}
       {...props}
     >
@@ -50,20 +50,7 @@ export function GoogleLoginButton({...props}) {
   return (
     <Button
       variant="outline"
-      onClick={async () => {
-        setIsLoading(true)
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-            options: {
-              redirectTo: window.location.origin + '/auth/callback'
-            }
-        })
-        if (error){
-          console.error('Error signing in:', error.message)
-          setIsLoading(false)
-        }
-        else router.push('/')
-      }}
+      onClick={() => signIn('google')}
       disabled={isLoading}
       {...props}
     >

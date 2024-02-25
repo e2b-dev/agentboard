@@ -19,7 +19,7 @@ export default async function IndexPage() {
   return (
     <>
       {!session && <AnonShield/>}
-      <Chat id={id} session={session}/>
+      <Chat id={id} session={session ?? undefined}/>
     </>
   )
 }
