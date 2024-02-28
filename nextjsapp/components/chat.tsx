@@ -351,7 +351,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
             break;
           }
           // Check the time elapsed since the first byte was received
-          if (Date.now() - startTime > 90000) { // 90 seconds
+          if (Date.now() - startTime > 1050000) { // 105 seconds
             // Notify the user about the timeout
             toast.error("Sorry, the response was too lengthy and it timed out. Try again with a shorter task.");
             setChatResponseLoading(false)
