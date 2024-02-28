@@ -67,7 +67,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const { messages, reload, stop, append, input, setInput, setMessages } = useChat({
     initialMessages,
     id,
-    api: process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat',
     body: { id },
     onResponse(response) {
       if (response.ok) {
@@ -290,7 +289,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
 
-    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://35.222.184.99/chat'
+    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://api.agentboard.dev/chat'
 
     // call the /chat API endpoint
     const res = await fetch(chat_endpoint, {

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         console.log("/upload-file written to E2B filesystem")
 
         // Send message to add_message_no_chat
-        const endpoint = process.env.NODE_ENV === 'production' ? 'http://35.222.184.99/add_message_no_chat' : 'http://localhost:8080/add_message_no_chat'
+        const endpoint = process.env.NODE_ENV === 'production' ? 'https://api.agentboard.dev/add_message_no_chat' : 'http://localhost:8080/add_message_no_chat'
         const res = await fetch(endpoint, {
             method: 'POST',
             headers: {
