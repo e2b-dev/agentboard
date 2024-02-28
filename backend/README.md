@@ -50,3 +50,13 @@ gcloud compute instance-groups managed rolling-action restart instance-group-1 -
 gcloud compute ssh --zone "us-central1-a" "instance-1" --project "agentboard-prod"
 docker ps
 docker container logs -f container-id
+
+Future note: Instead of restarting the VMs which has a lot of downtime, consider using the gcloud instance update feature:
+
+https://stackoverflow.com/questions/60674936/auto-update-pull-docker-image-on-gcp-instance-groups-with-container-optimized-os
+Specifically this one:
+```
+for i in $(gcloud compute instances list --filter NAME~"app-backend-instance-group" --format="value(NAME)");do gcloud beta compute instances update-container $i --zone europe-west3-c --container-image=gcr.io/deployments-337523/app-backend:latest;done
+```
+It's no longer in beta:
+https://cloud.google.com/sdk/gcloud/reference/compute/instances/update
