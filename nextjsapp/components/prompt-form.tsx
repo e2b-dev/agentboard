@@ -52,8 +52,8 @@ export function PromptForm({
   return (
     <form
       onSubmit={(e) => {
-        handleSubmit(e)
         inputRef.current?.focus()
+        handleSubmit(e)
       }}
       ref={formRef}
     >
@@ -86,14 +86,14 @@ sandboxID: {sandboxID || <IconSpinner/>}</span></p>
           <Textarea
             ref={inputRef}
             tabIndex={0}
-            onKeyDown={onKeyDown}
+            onKeyDown={(e) => onKeyDown(e, isLoading)}
             rows={1}
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="Send a message."
             spellCheck={false}
             className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-            disabled={isLoading || fileUploading || !loggedIn}
+            disabled={fileUploading || !loggedIn}
           />
           <div className="absolute right-0 top-4 sm:right-4">
             <Tooltip>
