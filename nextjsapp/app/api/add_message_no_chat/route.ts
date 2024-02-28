@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     })
 
     // Require e2b sandbox if we're in production (local development doesn't require a sandbox) 
-    if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'e2b') {
+    if(process.env.NODE_ENV === 'production' || process.env.DOCKER === 'preview') {
         if(!sandboxID) {
             return new Response('Sandbox ID required', {
                 status: 400

@@ -10,8 +10,17 @@ docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=$OPENAI_API_KEY 
 Step 1: Push to artifact repository
 docker push us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod
 
+Step 2: Trigger rolling restart of VMs in instance group so that they pick up the new docker image
+
+```
+gcloud compute instance-groups managed rolling-action restart instance-group-1 --zone=us-east1-b --max-unavailable=2 --min-ready=210s
+
+```
+
 # Debugging VM via SSH
 gcloud compute ssh --zone "us-central1-a" "instance-1" --project "agentboard-prod"
+docker ps
+docker container logs -f container-id
 
 # Testing instructions
 1. Test if the server is running:

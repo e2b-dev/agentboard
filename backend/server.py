@@ -6,7 +6,7 @@ import queue
 from typing import List, Optional
 from threading import Event
 
-from fastapi import FastAPI, Header, HTTPException 
+from fastapi import FastAPI, Header, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -20,6 +20,7 @@ supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABAS
 AI_START_TOKEN = "AI<ST>"
 AI_END_TOKEN = "AI<ET>"
 
+from interpreter.core.core import OpenInterpreter
 
 def PythonE2BFactory(sandbox_id):
     class PythonE2BSpecificSandbox():
@@ -157,6 +158,12 @@ def setup_interpreter(the_interpreter, sandbox_id=None):
 
     """
 
+def get_interpreter():
+    def dependency():
+        new_interpreter = OpenInterpreter()
+        yield new_interpreter
+    return dependency
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -208,7 +215,6 @@ async def user_id_for_token(token: str) -> Optional[str]:
     # Remove 'Bearer ' prefix if present
     if token.startswith("Bearer "):
         token = token[7:]
-        logger.info(f"Request Token: {token}")
     # Verify the token with Supabase
     try:
         data = supabase.auth.get_user(token)
@@ -234,7 +240,7 @@ class UserMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[UserMessage]
 @app.post("/chat")
-async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(None)):
+async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(None), interpreter: OpenInterpreter = Depends(get_interpreter())):
     try:
         if not authorization:
             logger.error("No authorization header")
@@ -246,21 +252,26 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
         if not user_id:
             logger.error("Invalid token")
             raise HTTPException(status_code=401, detail="Invalid token") 
-        logger.info(f"Time to get user id: {time.time() - start_time}")
 
         # Exchange user ID for sandbox ID
         start_time = time.time()
         sandbox_id = sandbox_id_for_user_id(user_id)
         if sandbox_id is None:
             return {"error": "No running sandbox found for user"}
-        logger.info(f"Time to get sandbox id: {time.time() - start_time}")
 
         # Connect to the sandbox, keep it alive, and setup interpreter
         start_time = time.time()
         sandbox = e2b.Sandbox.reconnect(sandbox_id)
         sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
         setup_interpreter(interpreter, sandbox_id)
-        logger.info(f"Time to connect to sandbox, keep alive, and setup interpreter: {time.time() - start_time}")
+        
+        # set messages to make this truly stateless
+        logger.info("chat_request.messages: " + str(chat_request.messages))
+        if len(chat_request.messages) > 1:
+            interpreter.messages = [{"role": x.role, "type": "message", "content": x.content} for x in chat_request.messages[:-1]]
+        else:
+            interpreter.messages = []
+        logger.info("Interpreter messages before interpreter.chat():" + str(interpreter.messages))
 
         def event_stream(start_time):
             first_response_sent = False

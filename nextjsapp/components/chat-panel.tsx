@@ -10,7 +10,6 @@ export interface ChatPanelProps
   extends Pick<
     UseChatHelpers,
     | 'isLoading'
-    | 'reload'
     | 'messages'
     | 'stop'
     | 'input'
@@ -22,6 +21,7 @@ export interface ChatPanelProps
     id?: string,
     loggedIn: boolean,
     sandboxID: string
+    reload: () => void
 }
 
 export function ChatPanel({

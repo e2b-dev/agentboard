@@ -64,7 +64,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [chatResponseLoading, setChatResponseLoading] = useState(false)
 
   /* Chat state management */
-  const { messages, reload, stop, append, input, setInput, setMessages } = useChat({
+  const { messages, stop, input, setInput, setMessages } = useChat({
     initialMessages,
     id,
     body: { id },
@@ -284,6 +284,15 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     };
   }, []);
 
+  const reload = () => {
+    if (messages.length <= 1) {
+      return
+    }
+    const updatedMessages = messages.slice(0,-1)
+    setMessages(updatedMessages)
+    setChatResponseLoading(true)
+    submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
+  }
   const submitAndUpdateMessages = async (updatedMessages: Message[]) => {
     
     // If the session has an expired access token, this method will use the refresh token to get a new session.
