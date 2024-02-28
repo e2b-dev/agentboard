@@ -35,12 +35,14 @@ export function PromptForm({
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
 
+  // put focus on textbox on pageload
   React.useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
     }
   }, [])
 
+  // put focus on textbox after file uploading
   React.useEffect(() => {
     if (!fileUploading && inputRef.current) {
       inputRef.current.focus()
@@ -49,7 +51,10 @@ export function PromptForm({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e) => {
+        handleSubmit(e)
+        inputRef.current?.focus()
+      }}
       ref={formRef}
     >
       <div className="relative flex flex-col">

@@ -299,6 +299,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       });
     }
   }
+  
   const submitAndUpdateMessages = async (updatedMessages: Message[]) => {
     
     // If the session has an expired access token, this method will use the refresh token to get a new session.
