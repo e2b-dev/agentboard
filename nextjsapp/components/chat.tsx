@@ -310,65 +310,81 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     } catch (error) {
       console.error('Error recording chat_message_sent event:', error)
     }
+  
+    try {
+      // call the /chat API endpoint
+      const res = await fetch(CHAT_API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          messages: updatedMessages,
+        }),
+      })
 
-    // call the /chat API endpoint
-    const res = await fetch(CHAT_API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`
-      },
-      body: JSON.stringify({
-        messages: updatedMessages,
-      }),
-    })
+      handleChatResponse(res)
+      
+      // check if response was ok
+      if (!res.ok) {
+        console.error(`/chat HTTP error! status: ${res.status}`)
+        return
+      }
 
-    handleChatResponse(res)
-    
-    // check if response was ok
-    if (!res.ok) {
-      console.error(`/chat HTTP error! status: ${res.status}`)
-      return
-    }
+      // parse stream response
+      const reader = res.body?.getReader()
+      const previousMessages = JSON.parse(JSON.stringify(updatedMessages))
+      let messageBuffer = ''
+      const textDecoder = new TextDecoder()
 
-    // parse stream response
-    const reader = res.body?.getReader()
-    const previousMessages = JSON.parse(JSON.stringify(updatedMessages))
-    let messageBuffer = ''
-    const textDecoder = new TextDecoder()
-    if (reader) {
+      // start the timer when the first byte is received
+      let startTime = Date.now()
 
-      // keep reading from stream until done
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
-          setChatResponseLoading(false)
-          break;
-        }
-        const text = textDecoder.decode(value);
-        let fullyFormattedText = decodeURIComponent(text)
+      if (reader) {
 
-        // use regex to parse out the data between the start and end tokens
-        const matches = fullyFormattedText.match(regexPattern);
-        if (!matches) {
-          continue
-        }
-        
-        // split the data into chunks
-        const chunks = matches.map(match => match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), ''));
-
-        // process each chunk individually
-        for (const chunk of chunks) {
-          messageBuffer += chunk
-          const lastMessage = {
-            id: id || 'default-id',
-            content: messageBuffer,
-            role: 'assistant' as 'assistant'
+        // keep reading from stream until done
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            setChatResponseLoading(false)
+            break;
           }
-          setMessages([...previousMessages, lastMessage]);
+          // Check the time elapsed since the first byte was received
+          if (Date.now() - startTime > 90000) { // 90 seconds
+            // Notify the user about the timeout
+            toast.error("Sorry, the response was too lengthy and it timed out. Try again with a shorter task.");
+            setChatResponseLoading(false)
+            await reader.cancel();
+            break; // Exit the loop or handle as needed
+          }
+          const text = textDecoder.decode(value);
+          let fullyFormattedText = decodeURIComponent(text)
 
+          // use regex to parse out the data between the start and end tokens
+          const matches = fullyFormattedText.match(regexPattern);
+          if (!matches) {
+            continue
+          }
+          
+          // split the data into chunks
+          const chunks = matches.map(match => match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), ''));
+
+          // process each chunk individually
+          for (const chunk of chunks) {
+            messageBuffer += chunk
+            const lastMessage = {
+              id: id || 'default-id',
+              content: messageBuffer,
+              role: 'assistant' as 'assistant'
+            }
+            setMessages([...previousMessages, lastMessage]);
+
+          }
         }
       }
+    } catch (error) {
+      console.log("Error when fetching chat response: ", error)
     }
   }
   /* Stores user text input in pendingMessageInputValue */
