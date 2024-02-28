@@ -65,11 +65,13 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const [chatResponseLoading, setChatResponseLoading] = useState(false)
 
   /* Chat state management */
-  const { messages, stop, input, setInput, setMessages } = useChat({
+  const { messages, input, setInput, setMessages } = useChat({
     initialMessages,
     id,
     body: { id }
   })
+
+  const userPressedStopGeneration = useRef(false)
 
   const supabase = createClient()
   const posthog = usePostHog()
@@ -338,7 +340,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       let messageBuffer = ''
       const textDecoder = new TextDecoder()
 
-      // start the timer when the first byte is received
+      // start the timer when the first byte is received for timeout later
       let startTime = Date.now()
 
       if (reader) {
@@ -350,7 +352,8 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
             setChatResponseLoading(false)
             break;
           }
-          // Check the time elapsed since the first byte was received
+          // Load balancer has a timeout of 2 minutes from first to last streamed byte per response.
+          // This prevents the user from seeing randomly truncated output.
           if (Date.now() - startTime > 1050000) { // 105 seconds
             // Notify the user about the timeout
             toast.error("Sorry, the response was too lengthy and it timed out. Try again with a shorter task.");
@@ -358,6 +361,15 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
             await reader.cancel();
             break; // Exit the loop or handle as needed
           }
+
+          // user pressed stop generation
+          if (userPressedStopGeneration.current) {
+            setChatResponseLoading(false)
+            userPressedStopGeneration.current = false
+            await reader.cancel();
+            break;
+          }
+
           const text = textDecoder.decode(value);
           let fullyFormattedText = decodeURIComponent(text)
 
@@ -458,30 +470,10 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       })
   }
 
-  /* This function stops generation by calling /api/killchat */
-  /* TODO: REMOVE THIS FUNCTION, /api/killchat ISN'T NEEDED */
-  async function stopEverything() {
-    // Call the original stop function
-    stop()
-
-    // Make a call to the /killchat API endpoint
-    try {
-      const response = await fetch('/api/kill-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ sandboxID: sandboxID })
-      })
-      const data = await response.text()
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${data}`)
-      }
-    } catch (error) {
-      console.error('Error while calling killchat:', error)
-    }
+  const stopEverything = async () => {
+    console.log("stopEverythingPressed")
+    userPressedStopGeneration.current = true
   }
-
   return (
     <>
     {dragging && (
