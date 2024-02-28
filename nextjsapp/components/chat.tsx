@@ -22,6 +22,7 @@ import {
 import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { CHAT_API_ENDPOINT } from '@/lib/constants'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
