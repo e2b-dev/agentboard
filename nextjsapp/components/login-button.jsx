@@ -11,7 +11,7 @@ export function GithubLoginButton({ ...props}) {
   const supabase = createClient()
   const [isLoading, setIsLoading] = React.useState(false)
 
-  signIn = async (provider) => {
+  const signIn = async (provider) => {
     setIsLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({ 
       provider: provider,
