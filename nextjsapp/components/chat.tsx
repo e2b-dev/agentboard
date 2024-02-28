@@ -289,7 +289,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
 
-    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'http://api.agentboard.dev/chat'
+    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'https://api.agentboard.dev/chat'
 
     // call the /chat API endpoint
     const res = await fetch(chat_endpoint, {
