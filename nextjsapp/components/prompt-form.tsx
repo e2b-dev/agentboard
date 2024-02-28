@@ -53,7 +53,7 @@ export function PromptForm({
       ref={formRef}
     >
       <div className="relative flex flex-col">
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV !== 'production' && (
           <div className="flex justify-center items-center pb-1">
             <p className="text-xs text-gray-500"><span style={{ display: 'inline-flex', alignItems: 'center' }}>
 sandboxID: {sandboxID || <IconSpinner/>}</span></p>
