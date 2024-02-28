@@ -10,8 +10,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 
 if (typeof window !== 'undefined') {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-    api_host: window.location.origin + '/ingest',
-    ui_host: 'https://app.posthog.com',
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     capture_pageview: false // Disable automatic pageview capture, as we capture manually
   })
 }

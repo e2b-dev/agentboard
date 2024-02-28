@@ -15,12 +15,16 @@ export default function PostHogPageView() {
       if (searchParams.toString()) {
         url = url + `?${searchParams.toString()}`
       }
-      posthog.capture(
-        '$pageview',
-        {
-          '$current_url': url,
-        }
-      )
+      try{
+        posthog.capture(
+          '$pageview',
+          {
+            '$current_url': url,
+          }
+        )
+      } catch (e) {
+        console.error('Error capturing PostHogpageview', e)
+      }
     }
   }, [pathname, searchParams, posthog])
   

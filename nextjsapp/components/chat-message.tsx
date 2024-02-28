@@ -43,7 +43,6 @@ export function ChatMessage({ message, agentType, handleSandboxLink, ...props }:
           transformLinkUri={uri => uri}
           components={{
             a({ children, href  }) {
-              console.log("chat-message.tsx: a: href: ", href)
               if (href && href.includes('/home/user/')) {
                   const extractedPath = '/home/user/' + href.split('/home/user/')[1];
                   return (

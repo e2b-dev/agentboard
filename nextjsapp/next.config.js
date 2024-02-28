@@ -1,13 +1,5 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  async rewrites() {
-    return [
-      {
-        source: "/ingest/:path*",
-        destination: "https://app.posthog.com/:path*",
-      },
-    ];
-  },
   reactStrictMode: true,
   images: {
     remotePatterns: [

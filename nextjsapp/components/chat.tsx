@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
-import { track } from '@vercel/analytics'
+import { usePostHog } from 'posthog-js/react'
+
+import { createClient } from '@/utils/supabase/client'
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import * as agents from '@/lib/agents'
-import { createClient } from '@/utils/supabase/client'
-
 import {
   Dialog,
   DialogContent,
@@ -68,53 +68,11 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const { messages, stop, input, setInput, setMessages } = useChat({
     initialMessages,
     id,
-    body: { id },
-    onResponse(response) {
-      if (response.ok) {
-        return
-      }
-      if (response.status === 401) {
-        toast.error(response.statusText)
-      }
-      else if (response.status === 500) {
-        toast.error("Your sandbox closed after 5 minutes of inactivity. Please refresh the page to start a new sandbox.")
-      }
-      else {
-        toast.error(`An unexpected ${response.status} error occurred. Please send your message again after reloading.`);
-        // Hopefully this will help debug the rogue 502 and 405 errors
-        fetch('/api/send-feedback', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ feedback: JSON.stringify({
-            errorStatus: response.status,
-            errorMessage: response.statusText,
-            timestamp: new Date().toISOString(),
-          })}),
-        })
-        .then(async feedbackResponse => {
-          // Check if the response is JSON
-          const contentType = feedbackResponse.headers.get("content-type");
-          if (contentType && contentType.indexOf("application/json") !== -1) {
-            return feedbackResponse.json();
-          } else {
-            // Handle non-JSON responses
-            return feedbackResponse.text().then(text => ({ message: text }));
-          }
-        })
-        .then(data => {
-          // Handle the data (JSON or text wrapped in an object)
-          console.log('Feedback response:', data.message);
-        })
-        .catch(feedbackError => {
-          console.error('Error sending feedback:', feedbackError);
-        });
-      }
-    },
+    body: { id }
   })
 
   const supabase = createClient()
+  const posthog = usePostHog()
   
   /* Creates sandbox and stores the sandbox ID */
   const fetchSandboxID = async () => {
@@ -294,15 +252,67 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     setChatResponseLoading(true)
     submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
   }
+
+  /* utility function to handle the errors when getting a response from the /chat API endpoint */
+  const handleChatResponse = (response: Response) => {
+    if (response.ok) {
+      return
+    }
+    if (response.status === 401) {
+      toast.error(response.statusText)
+    }
+    else if (response.status === 500) {
+      toast.error("Your sandbox closed after 5 minutes of inactivity. Please refresh the page to start a new sandbox.")
+    }
+    else {
+      toast.error(`An unexpected ${response.status} error occurred. Please send your message again after reloading.`);
+      // Hopefully this will help debug the rogue 502 and 405 errors
+      fetch('/api/send-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ feedback: JSON.stringify({
+          errorStatus: response.status,
+          errorMessage: response.statusText,
+          timestamp: new Date().toISOString(),
+        })}),
+      })
+      .then(async feedbackResponse => {
+        // Check if the response is JSON
+        const contentType = feedbackResponse.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          return feedbackResponse.json();
+        } else {
+          // Handle non-JSON responses
+          return feedbackResponse.text().then(text => ({ message: text }));
+        }
+      })
+      .then(data => {
+        // Handle the data (JSON or text wrapped in an object)
+        console.log('Feedback response:', data.message);
+      })
+      .catch(feedbackError => {
+        console.error('Error sending feedback:', feedbackError);
+      });
+    }
+  }
   const submitAndUpdateMessages = async (updatedMessages: Message[]) => {
     
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
 
-    const chat_endpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:8080/chat' : 'https://api.agentboard.dev/chat'
+    try{
+      posthog?.capture('chat_message_sent', {
+        message: updatedMessages[updatedMessages.length - 1],
+        user: session?.user?.id
+      })
+    } catch (error) {
+      console.error('Error recording chat_message_sent event:', error)
+    }
 
     // call the /chat API endpoint
-    const res = await fetch(chat_endpoint, {
+    const res = await fetch(CHAT_API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -312,6 +322,8 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
         messages: updatedMessages,
       }),
     })
+
+    handleChatResponse(res)
     
     // check if response was ok
     if (!res.ok) {
@@ -383,7 +395,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     setInput('')
 
     if (sandboxID) {
-      track('chat_message_sent')
 
       // get the response from the sandbox with the updates messages array
       submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
@@ -397,7 +408,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   useEffect(() => {
     const executePendingSubmitEvent = async () => {
       if (sandboxID && pendingMessagesValue) {
-        track('chat_message_sent')
         submitAndUpdateMessages(pendingMessagesValue).catch(err => console.error(err))
         setPendingMessagesValue(null)
       }
@@ -433,6 +443,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   }
 
   /* This function stops generation by calling /api/killchat */
+  /* TODO: REMOVE THIS FUNCTION, /api/killchat ISN'T NEEDED */
   async function stopEverything() {
     // Call the original stop function
     stop()
