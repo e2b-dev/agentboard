@@ -124,12 +124,12 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       console.log("Error: fileUploadOnChange called with invalid event type")
       return
     }
-    let newMessages = [
+    let newMessages: Message[] = [
       ...messages,
       {
         id: id || 'default-id',
         content: `Uploading \`${file?.name}\` ...`,
-        role: 'user' as 'user'
+        role: 'user'
       }
     ]
     setMessages(newMessages)
@@ -245,14 +245,21 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     };
   }, []);
 
+  /* Cancels most recent assistant response and sends most recent user message to sandbox again */
   const reload = () => {
-    if (messages.length <= 1) {
-      return
+    // sometimes no assistant message has come in yet, we will just submit the previous user message
+    console.log('reload, messages: ', messages)
+    if (messages[messages.length -1].role === 'user') {
+      setChatResponseLoading(true)
+      submitAndUpdateMessages(messages).catch(err => console.error(err))
     }
-    const updatedMessages = messages.slice(0,-1)
-    setMessages(updatedMessages)
-    setChatResponseLoading(true)
-    submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
+    // assistant message was the most recent message in the messages array
+    else {
+      const updatedMessages = messages.slice(0,-1)
+      setMessages(updatedMessages)
+      setChatResponseLoading(true)
+      submitAndUpdateMessages(updatedMessages).catch(err => console.error(err))
+    }
   }
 
   /* utility function to handle the errors when getting a response from the /chat API endpoint */
@@ -344,7 +351,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       // start the timer when the first byte is received for timeout later
       let startTime = Date.now()
 
-      if (reader) {
+      if (reader && !userPressedStopGeneration.current) {
 
         // keep reading from stream until done
         while (true) {
@@ -365,8 +372,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
 
           // user pressed stop generation
           if (userPressedStopGeneration.current) {
-            setChatResponseLoading(false)
-            userPressedStopGeneration.current = false
             await reader.cancel();
             break;
           }
@@ -396,6 +401,9 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
           }
         }
       }
+      
+      userPressedStopGeneration.current = false;
+
     } catch (error) {
       console.log("Error when fetching chat response: ", error)
     }
@@ -412,13 +420,13 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     }
 
     // add user message to the messages array
-    const updatedMessages = [
+    const updatedMessages: Message[] = [
       ...messages,
       {
         id: id || 'default-id',
         content: input,
-        role: 'user' as 'user'
-      }
+        role: 'user'
+      } as Message
     ]
     setMessages(updatedMessages)
     setInput('')
@@ -472,7 +480,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   }
 
   const stopEverything = async () => {
-    console.log("stopEverythingPressed")
+    setChatResponseLoading(false)
     userPressedStopGeneration.current = true
   }
   return (
