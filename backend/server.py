@@ -67,23 +67,15 @@ def PythonE2BFactory(sandbox_id):
             exit_event = Event()
             out_queue = queue.Queue[e2b.ProcessMessage]()
 
-            if sandbox_id is None: # Used only by the /chatnostream endpoint
-                stdout, stderr = e2b.run_code('Python3', code)
-                # Yield the output
-                yield {
-                    "type": "console", "format": "output",
-                    "content": stdout + stderr # We combined these arbitrarily. Yield anything you'd like!
-                }
-            else:
-                sandbox = e2b.Sandbox.reconnect(sandbox_id)
+            sandbox = e2b.Sandbox.reconnect(sandbox_id)
 
-                self.run_python(
-                    sandbox,
-                    code,
-                    on_stdout=out_queue.put_nowait,
-                    on_stderr=out_queue.put_nowait,
-                    on_exit=exit_event.set,
-                )
+            self.run_python(
+                sandbox,
+                code,
+                on_stdout=out_queue.put_nowait,
+                on_stderr=out_queue.put_nowait,
+                on_exit=exit_event.set,
+            )
 
             while not exit_event.is_set() or not out_queue.qsize() == 0:
                 try:
@@ -106,7 +98,7 @@ def PythonE2BFactory(sandbox_id):
     
     return PythonE2BSpecificSandbox
 
-def setup_interpreter(the_interpreter, sandbox_id=None):
+def setup_interpreter(the_interpreter, sandbox_id):
     the_interpreter.auto_run = True
     the_interpreter.llm.model = "gpt-4-0125-preview"
     the_interpreter.computer.terminate()
@@ -191,18 +183,6 @@ Test endpoint. Used to test if the server is running.
 def hello_world():
     try:
         return {"Hello": "World"}
-    except Exception as e:
-        logger.error(e)
-        raise
-
-"""
-Test endpoint. Uses e2b.run_code(), so not stateful and not user-specific.
-"""
-@app.get("/chatnostream")
-def chat_endpoint_non_stream(message: str):
-    try:
-        setup_interpreter(interpreter)
-        return interpreter.chat(message)
     except Exception as e:
         logger.error(e)
         raise
@@ -313,30 +293,3 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
         print("Exception: ", e)
         logger.error("Exception:", e)
         raise
-
-'''
-TODO: THIS IS FALSE, SERVER CALLS MUST BE STATELESS OTHERWISE USERS WILL ACCESS 
-EACH OTHERS MESSAGES. SO WE MUST FIND A WAY TO SYNC MESSAGE HISTORY WITH EVERY CALL,
-AND GET RID OF THIS FUNCTION
-==
-This is used to notify Open Interpreter that we've uploaded a file to the E2B filesystem.
-We can't just sync the frontend message history with Open Interpreter with every /chat, 
-because Open Interpreter adds an extra field "type" to its message history.
-
-So it's best to let Open Interpreter manage its own message history, and we'll just take care of adding this one manually.
-'''
-class ChatMessage(BaseModel):
-    message: str
-@app.post("/add_message_no_chat")
-def add_message_no_chat(chat_message: ChatMessage):
-    try:
-        interpreter.messages.append({"role": "user", "type": "message", "content": chat_message.message})
-        return {"status": "Message added to interpreter"}
-    except Exception as e:
-        logger.error(e)
-        raise
-@app.get("/killchat")
-def kill_chat():
-    interpreter.reset()
-    setup_interpreter(interpreter)
-    return {"status": "Chat process terminated"}

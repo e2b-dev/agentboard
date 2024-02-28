@@ -42,30 +42,11 @@ export async function POST(req: Request) {
         console.log(`The file was uploaded to '${remotePath}' path inside the sandbox `)
         console.log("/upload-file written to E2B filesystem")
 
-        // Send message to add_message_no_chat
-        const endpoint = process.env.NODE_ENV === 'production' ? 'https://api.agentboard.dev/add_message_no_chat' : 'http://localhost:8080/add_message_no_chat'
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: `Uploaded ${fileName} ✅`
-            })
-        })
-
-        if(!res.ok) {
-            console.log("Failed to send message to add_message_no_chat")
-            return new Response('Failed to add message to message history', {
-                status: 500
-            })
-        }
-
         return new Response(JSON.stringify({success: true}), {status: 200})
     }
     catch (e) {
         console.log(e)
-        return new Response('Unexpected error', {
+        return new Response("Unexpected error, couldn't upload file", {
             status: 500
         })
     }
