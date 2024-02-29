@@ -529,8 +529,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
         sandboxID={sandboxID || ''}
       />
 
-      <button
-        className="fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800"
+      <button className="hidden sm:block fixed bottom-5 right-5 bg-black rounded-full p-3 hover:bg-gray-800"
         onClick={() => setFeedbackDialogOpen(true)}
       >
         <IconFeedback className="w-5 h-5" />
