@@ -23,6 +23,11 @@ export function UserMenu({ user }) {
   const supabase = createClient()
   const router = useRouter()
 
+  const formatNameForMobile = (name) => {
+    const firstName = name.split(' ')[0];
+    return firstName.length > 8 ? `${firstName.slice(0, 8)}...` : firstName;
+  }
+
   const user_data = user.user_metadata
   return (
     <div className="flex items-center justify-between">
@@ -41,7 +46,8 @@ export function UserMenu({ user }) {
                 {user_data.name ? getUserInitials(user_data.name) : null}
               </div>
             )}
-            <span className="ml-2">{user_data.name}</span>
+            <span className="ml-2 inline sm:hidden">{user_data.name ? formatNameForMobile(user_data.name) : null}</span>
+            <span className="ml-2 hidden sm:block">{user_data.name}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={8} align="start" className="w-[180px]">
