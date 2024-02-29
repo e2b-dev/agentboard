@@ -43,6 +43,7 @@ export async function GET() {
         })
     }
     catch (e){
+        console.log("Error creating sandbox: ", e)
         return new Response((JSON.stringify(e)), {
             status: 500
         })

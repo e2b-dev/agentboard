@@ -311,7 +311,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
-
+    console.log("user iD", session?.user?.id)
     try{
       posthog?.capture('chat_message_sent', {
         message: updatedMessages[updatedMessages.length - 1],
