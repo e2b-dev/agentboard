@@ -20,7 +20,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex items-center w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
-      <div className="flex items-center justify-start w-1/3">
+      <div className="flex items-center justify-start w-1/2 sm:w-1/3">
         {/* {user ? (
           <></>
           // <Sidebar>
@@ -51,13 +51,9 @@ export async function Header() {
         </div>
       </div>
       <div className="flex items-center justify-center w-1/3">
-        <span>using {' '}
-        <ExternalLink href="https://openinterpreter.com/">
-          <span className="text-center" style={{ fontFamily: 'system-ui' }}> Open Interpreter Project</span>
-        </ExternalLink>
-      </span>
+        <div className="text-lg font-bold">Agentboard</div>
       </div>
-      <div className="flex items-center justify-end w-1/3"></div>
+      <div className="flex sm:hidden items-end justify-end w-1/3 mr-4"></div>
     </header>
   )
 }
