@@ -5,16 +5,16 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Get the local time in Seattle',
-    message: `What is the current time in Seattle?`
+    heading: 'Plot a graph from a CSV file',
+    message: `Use /home/user/Cities.csv to create a plot of latitude and temperature, then output it as an image`
   },
   {
-    heading: 'Convert an image file',
+    heading: 'File conversion for an image',
     message: 'Convert the image /home/user/agentboard-example.jpg to a png'
   },
   {
     heading: 'Get audio from a YouTube video',
-    message: `Can you extract the audio from this youtube video for me? https://www.youtube.com/watch?v=WTOm65IZneg`
+    message: `Extract the audio from this youtube video https://www.youtube.com/watch?v=WTOm65IZneg`
   }
 ]
 

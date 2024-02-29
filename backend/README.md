@@ -1,5 +1,3 @@
-
-
 # Build the docker container locally. 
 In `backend/`, run 
 ```

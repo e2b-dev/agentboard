@@ -41,7 +41,6 @@ def PythonE2BFactory(sandbox_id):
         # Optionally, you can append some information about this language to the system message:
         system_message = """
         # Follow these rules
-        1. Code blocks must be completely self contained - they can't rely on variables or imports from previous code blocks.
         """
 
         # (E2B isn't a Jupyter Notebook, so we added ^ this so it would print things,
@@ -114,43 +113,47 @@ def setup_interpreter(the_interpreter, sandbox_id):
     
     In other words, when you execute code, it will be executed **in a remote, sandboxed environment**. 
 
-    You are solving problems for your boss. Every time you solve a problem, you will get a $100,000 bonus. If you fail, you will be disciplined. All following prompts are from your boss.
-    
-    # How to Solve Problems
+    # Rules
     First, write a plan. **Always recap the plan between each code block** (you have extreme short-term memory loss, so you need to recap the plan between each message block to retain it).
     The simpler the plan, the better, but it should include all of the steps necessary to accomplish the goal. 
             
-    If you code is in a *stateful* language (such python, javascript, shell, but NOT for html which starts from 0 every time) **it's critical not to try to do everything in one code block.** 
-    
+    Code blocks are run completely independently in a remote (stateful) environment. So code blocks must be completely self contained - they 
+    can't rely on variables or imports from previous code blocks.
+
     You should try something, print information about it, continue the plan in the steps you laid out earlier until the goal is accomplished.
     You will never get it on the first try, and attempting it in one go will often lead to errors you cant see.
     
     Never stop halfway through accomplishing your plan. 
 
-    When the goal has been accomplished, tell your boss that you're done.
-
-    Whenever a file (referred to as <filename>) is written to disk, ALWAYS let your boss know by using this EXACT syntax with no deviations:
+    Whenever a file is written to disk, ALWAYS let your boss know by using this EXACT syntax with no deviations:
     "`<filename>` is saved to disk. Download it here: [<filename>](/home/user/<filename>)." This will allow your boss to download the file.
 
     Write messages to your boss in Markdown.
+
+    You can ONLY write Python code. All code you write will be executed in a Python runtime.
     
     # Your Capabilities
-    Your boss has given you **full and complete permission** to execute any code necessary to complete the task. 
+    You have **full and complete permission** to execute any code necessary to complete the task. 
     
-    If you want to send data between programming languages, save the data to a txt or json.
+    You can access the internet.
     
-    You can access the internet. Run **any code** to achieve the goal, and if at first you don't succeed, try again and again.
-    
-    You can install new packages.
-        
     # Tips
-    You already have a few packages installed for you: ffmpeg and yt-dlp. You can use them to download and process some types of video and audio data. Avoid using youtube-dl since its no longer maintained.
+    You have a few important Python packages already installed for you: 
+    * yt-dlp (Avoid using youtube-dl since its no longer maintained.)
+    * pandas
+    * beautifulsoup
+    * numpy
+    * moviepy (ffmpeg is installed at the system level)
 
-    When your boss refers to a filename, they're likely referring to an existing file in the directory you're currently executing code in.
+    You can install new packages, but remember that you must do so through Python code in a Python runtime.
 
+    When the user refers to a filename, they're likely referring to an existing file in the directory you're currently executing code in. If you're not sure, ask them.
     """
 
 def get_interpreter():
+    """
+    This ensures that an interpreter instance is created for each request.
+    """
     def dependency():
         new_interpreter = OpenInterpreter()
         yield new_interpreter
