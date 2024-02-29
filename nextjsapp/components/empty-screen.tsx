@@ -1,20 +1,19 @@
 import { UseChatHelpers } from 'ai/react'
 
 import { Button } from '@/components/ui/button'
-import { ExternalLink } from '@/components/external-link'
 import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Find the current local time in Seattle',
+    heading: 'Get the local time in Seattle',
     message: `What is the current time in Seattle?`
   },
   {
-    heading: 'Convert an example .jpg image to .png, then download it',
+    heading: 'Convert an image file',
     message: 'Convert the image /home/user/agentboard-example.jpg to a png'
   },
   {
-    heading: 'Extract the audio from a youtube video',
+    heading: 'Get audio from a YouTube video',
     message: `Can you extract the audio from this youtube video for me? https://www.youtube.com/watch?v=WTOm65IZneg`
   }
 ]
@@ -27,14 +26,16 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           Welcome to Agentboard!
         </h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          Agentboard is an easy way to try out AI agents from the comfort of the web.
-          All agents run in sandboxed Docker containers and are completely ephemeral.
+          Agentboard is the easiest way to use an AI agent in the browser.
         </p>
-        <p className="mb-2 leading-normal text-muted-foreground">For now, you can try <ExternalLink href="https://openinterpreter.com/"> Open Interpreter</ExternalLink>, with plans to
-        expand to other AI agents such as <ExternalLink href="https://github.com/yoheinakajima/babyagi">BabyAGI</ExternalLink>
-        in the future.</p> 
-        <p className="leading-normal text-muted-foreground">
-          You can start a conversation below or try the following examples:
+        <p className="mb-2 leading-normal text-muted-foreground">
+          In other words: it will attempt write AND execute code to accomplish tasks.
+        </p>
+        <p className="mb-2 leading-normal text-muted-foreground">
+          Users find Agentboard most useful for CSV analysis, image manipulation, and web scraping.
+        </p>
+        <p className="mb-2 leading-normal text-muted-foreground">
+          Try one of the following examples:
         </p>
         <div className="mt-4 flex flex-col items-start space-y-2">
           {exampleMessages.map((message, index) => (
