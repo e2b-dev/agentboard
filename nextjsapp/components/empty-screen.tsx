@@ -32,7 +32,7 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
           Specify a task, and Agentboard will write and execute code to complete it.
         </p>
         <p className="mb-2 leading-normal text-muted-foreground">
-          You'll find it useful for CSV analysis, image manipulation, or web scraping.
+          You&apos;ll find it useful for CSV analysis, image manipulation, or web scraping.
         </p>
         <p className="mb-2 leading-normal text-muted-foreground">
           Try one of the following examples:
