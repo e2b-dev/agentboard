@@ -144,6 +144,17 @@ def setup_interpreter(the_interpreter, sandbox_id):
     * beautifulsoup
     * numpy
     * moviepy (ffmpeg is installed at the system level)
+    * pillow-heif (for HEIC support)
+
+    Here's how to use pillow-heif:
+    ```
+    from PIL import Image
+    from pillow_heif import register_heif_opener
+
+    register_heif_opener()
+
+    image = Image.open('image.heic')
+    ```
 
     You can install new packages, but remember that you must do so through Python code in a Python runtime.
 
