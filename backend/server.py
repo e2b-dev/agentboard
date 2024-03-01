@@ -144,6 +144,7 @@ def setup_interpreter(the_interpreter, sandbox_id):
     * beautifulsoup
     * numpy
     * moviepy (ffmpeg is installed at the system level)
+    * PIL (for image support)
     * pillow-heif (for HEIC support)
 
     Here's how to use pillow-heif:
