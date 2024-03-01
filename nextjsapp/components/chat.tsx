@@ -205,6 +205,22 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     executePendingFileUploadEvent()
   }, [sandboxID, pendingFileInputValue])
 
+  /* Attaches supabase listener that clears the message history when user logs out */
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        // Clear message history when the user logs out or their account is deleted
+        setMessages([]);
+        setFirstMessageSubmitted(false);
+      }
+    });
+  
+    return () => {
+      // Cleanup the listener when the component unmounts
+      authListener.subscription?.unsubscribe()
+    };
+  }, []);
+
   /* Attaches listeners to window to allow user to drag and drop files */
   useEffect(() => {
     const dragEvents = ['dragenter', 'dragover', 'dragleave', 'drop'];
