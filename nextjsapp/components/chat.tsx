@@ -376,9 +376,9 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
             setChatResponseLoading(false)
             break;
           }
-          // Load balancer has a timeout of 5 minutes from first to last streamed byte per response.
+          // Load balancer has a timeout of 10 minutes from first to last streamed byte per response.
           // This prevents the user from seeing randomly truncated output.
-          if (Date.now() - startTime > 2700000) { // 4mins 30 seconds seconds
+          if (Date.now() - startTime > 5700000) { // 9mins 30 seconds seconds
             // Notify the user about the timeout
             toast.error("Sorry, the response was too lengthy and it timed out. Try again with a shorter task.");
             setChatResponseLoading(false)
