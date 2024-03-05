@@ -27,7 +27,7 @@ docker logs $(docker ps -qf "name=ois-container")
 e2b Docker Build Command
 
 ```
-cp dev.e2b.toml e2b.toml && e2b build
+cp dev.e2b.toml e2b.toml && e2b template build
 
 ```
 
@@ -36,7 +36,7 @@ cp dev.e2b.toml e2b.toml && e2b build
 
 Open a shell with the docker image to verify it's started
 ```
-e2b shell
+e2b sandbox spawn
 ```
 
 Commands to check if anything went wrong
@@ -51,6 +51,6 @@ journalctl -u start_cmd.service
 e2b Docker Build Command
 
 ```
-cp prod.e2b.toml e2b.toml && e2b build
+cp prod.e2b.toml e2b.toml && e2b template build
 
 ```

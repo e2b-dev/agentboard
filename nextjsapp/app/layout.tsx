@@ -12,6 +12,7 @@ import { Header } from '@/components/header'
 import dynamic from 'next/dynamic'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
   title: {
     default: 'Agentboard',
     template: `%s - Agentboard`
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png'
-  }
+  },
 }
 
 interface RootLayoutProps {
