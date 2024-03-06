@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
-import { usePostHog } from 'posthog-js/react'
 
 import { createClient } from '@/utils/supabase/client'
 import { cn } from '@/lib/utils'
@@ -74,7 +73,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   const userPressedStopGeneration = useRef(false)
 
   const supabase = createClient()
-  const posthog = usePostHog()
   
   /* Creates sandbox and stores the sandbox ID */
   const fetchSandboxID = async () => {
@@ -327,15 +325,6 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
     
     // If the session has an expired access token, this method will use the refresh token to get a new session.
     const { data: {session} } = await supabase.auth.getSession()
-    console.log("user iD", session?.user?.id)
-    try{
-      posthog?.capture('chat_message_sent', {
-        message: updatedMessages[updatedMessages.length - 1],
-        user: session?.user?.id
-      })
-    } catch (error) {
-      console.error('Error recording chat_message_sent event:', error)
-    }
   
     try {
       // call the /chat API endpoint
