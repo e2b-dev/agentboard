@@ -31,6 +31,9 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    else {
+      console.error('Error exchanging code for session:', error)
+    }
   }
 
   // return the user to an error page with instructions
