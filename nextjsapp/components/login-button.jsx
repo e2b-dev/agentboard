@@ -14,7 +14,8 @@ export function GithubLoginButton({ ...props}) {
   return (
     <Button
       variant="outline"
-      onClick={async () => {
+      onClick={async (e) => {
+        e.preventDefault()
         setIsLoading(true)
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'github',
@@ -50,7 +51,8 @@ export function GoogleLoginButton({...props}) {
   return (
     <Button
       variant="outline"
-      onClick={async () => {
+      onClick={async (e) => {
+        e.preventDefault()
         setIsLoading(true)
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
