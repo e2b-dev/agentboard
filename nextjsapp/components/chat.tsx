@@ -209,6 +209,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
       if (event === 'SIGNED_OUT') {
         // Clear message history when the user logs out or their account is deleted
         setMessages([]);
+        setSandboxID(null);
         setFirstMessageSubmitted(false);
       }
     });
