@@ -12,7 +12,7 @@ import { Header } from '@/components/header'
 import dynamic from 'next/dynamic'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(`https://${process.env.VERCEL_URL}`),
+  metadataBase: new URL(`https://www.agentboard.dev`),
   title: {
     default: 'Agentboard',
     template: `%s - Agentboard`
@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png'
+  },
+  openGraph: {
+    images: '/opengraph-image.png',
   },
 }
 
