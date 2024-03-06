@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
-import dynamic from 'next/dynamic'
 
 export const metadata: Metadata = {
   metadataBase: new URL(`https://www.agentboard.dev`),

@@ -11,7 +11,6 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from interpreter import interpreter
 import e2b
 from supabase import create_client
 
@@ -21,6 +20,7 @@ AI_START_TOKEN = "AI<ST>"
 AI_END_TOKEN = "AI<ET>"
 
 from interpreter.core.core import OpenInterpreter
+from posthog import Posthog
 
 def PythonE2BFactory(sandbox_id):
     class PythonE2BSpecificSandbox():
@@ -273,9 +273,13 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
             interpreter.messages = []
         logger.info("Interpreter messages before interpreter.chat():" + str(interpreter.messages))
 
+        # record PostHog analytics
+        posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
+        posthog.capture(user_id, "chat_message_sent", {"messages": chat_request.messages[-1].content})
+
         def event_stream(start_time):
             first_response_sent = False
-            for result in interpreter.chat(chat_request.messages[-1].content, stream=True):
+            for result in interpreter.chat(chat_request.messages[-1].content, stream=True, display=False):
                 
                 print("Result: ", result)
                 if result:

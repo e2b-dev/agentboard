@@ -7,7 +7,7 @@ docker build -t us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-se
 # Run the docker container locally
 In `backend/`, run 
 ```
-docker rm -f ois-container && docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=$OPENAI_API_KEY -e E2B_API_KEY=$E2B_API_KEY -e SUPABASE_URL=$AGB_DEV_SUPABASE_URL -e SUPABASE_KEY=$AGB_DEV_SUPABASE_SECRET_KEY us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod
+docker rm -f ois-container && docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=$OPENAI_API_KEY -e E2B_API_KEY=$E2B_API_KEY -e SUPABASE_URL=$AGB_DEV_SUPABASE_URL -e SUPABASE_KEY=$AGB_DEV_SUPABASE_SECRET_KEY -e POSTHOG_HOST=$POSTHOG_HOST -e POSTHOG_API_KEY=$POSTHOG_API_KEY us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod
 ```
 
 # Push the docker container to the artifact repo
@@ -24,7 +24,7 @@ gcloud compute instance-groups managed rolling-action restart instance-group-1 -
 
 # Connect to VM via SSH
 ```
-gcloud compute ssh --zone "us-central1-a" "instance-1" --project "agentboard-prod"
+gcloud compute ssh --zone "us-east1-b" "instance-name" --project "agentboard-prod"
 # once you're inside, get the container id
 docker ps
 docker container logs -f CONTAINER-ID
