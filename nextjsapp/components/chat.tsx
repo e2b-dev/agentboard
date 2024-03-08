@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
-
+import { type User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
@@ -26,7 +26,7 @@ import { CHAT_API_ENDPOINT } from '@/lib/constants'
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string, 
-  session?: any
+  user?: User
 }
 interface SandboxData {
   sandboxID: string
@@ -37,7 +37,7 @@ const endToken = "AI<ET>"
 const regexPattern = new RegExp(`${startToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(.*?)${endToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gs');
 
 
-export function Chat({ id, initialMessages, className, session }: ChatProps) {
+export function Chat({ id, initialMessages, className, user }: ChatProps) {
 
   /* State for sandbox management */
   const [sandboxID, setSandboxID] = useState<string | null>(null)
@@ -98,14 +98,14 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
   }
 
   /* Ensures we only create a sandbox once (even with strictmode doublerendering) */
-  // btw, !!session is shorthand for 'logged in'
+  // btw, !!user is shorthand for 'logged in'
   const fetchSandboxIDCalled = useRef(false)
   useEffect(() => {
-    if (!fetchSandboxIDCalled.current && !sandboxID && !!session) {
+    if (!fetchSandboxIDCalled.current && !sandboxID && !!user) {
       fetchSandboxID().catch(err => console.error(err))
       fetchSandboxIDCalled.current = true;
     }
-  }, [sandboxID, !!session])
+  }, [sandboxID, !!user])
 
   /* Stores user file input in pendingFileInputValue */
   async function fileUploadOnChange(e: React.ChangeEvent<HTMLInputElement> | DragEvent) {
@@ -205,7 +205,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
 
   /* Attaches supabase listener that clears the message history when user logs out */
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         // Clear message history when the user logs out or their account is deleted
         setMessages([]);
@@ -531,7 +531,7 @@ export function Chat({ id, initialMessages, className, session }: ChatProps) {
         handleSubmit={handleMessageSubmit}
         fileUploadOnChange={fileUploadOnChange}
         fileUploading={fileUploading}
-        loggedIn={!!session}
+        loggedIn={!!user}
         sandboxID={sandboxID || ''}
       />
 

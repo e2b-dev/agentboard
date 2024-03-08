@@ -11,19 +11,17 @@ export default async function IndexPage() {
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
 
-  const {data: {session}} = await supabase.auth.getSession()
+  const {data: {user}} = await supabase.auth.getUser()
   const posthog = PostHogClient()
-  if(!session) {
-    console.log("Capturing anon page view")
+  if(!user) {
     posthog.capture({
       distinctId: 'anon',
       event: 'page_view',
     })
   }
   else {
-    console.log("Capturing page view for user ", session.user.id)
     posthog.capture({
-      distinctId: session.user.id,
+      distinctId: user.id,
       event: 'page_view',
     })
   }
@@ -32,8 +30,8 @@ export default async function IndexPage() {
 
   return (
     <>
-      {!session && <AnonShield/>}
-      <Chat id={id} session={session ?? undefined}/>
+      {!user && <AnonShield/>}
+      <Chat id={id} user={user ?? undefined}/>
     </>
   )
 }
