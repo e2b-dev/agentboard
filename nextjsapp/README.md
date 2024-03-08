@@ -1,3 +1,9 @@
+# How to run repo
+1. Make sure you have the correct `.env` file.
+2. Run `pnpm dev` in the `nextjsapp/` folder to run it on `localhost:3000`.
+
+
+# Notes to self
 Make sure you're doing everything with `pnpm`. 
 
 Adding packages:
