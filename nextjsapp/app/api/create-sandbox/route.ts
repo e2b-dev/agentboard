@@ -29,8 +29,8 @@ export async function GET() {
             })
         }
 
-        // 5 minutes in development, 1 hour in production
-        await sandbox.keepAlive(process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 60 * 60 * 1000) 
+        // 5 minutes in development, 10 mins in production
+        await sandbox.keepAlive(process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 10 * 60 * 1000) 
 
         await sandbox.close()
 

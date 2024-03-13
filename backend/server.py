@@ -162,8 +162,7 @@ def setup_interpreter(the_interpreter, sandbox_id):
 
     You can install new packages, but remember that you must do so through Python code in a Python runtime.
 
-    When the user refers to a filename, they're likely referring to an existing file in the directory 
-    you're currently executing code in. If you're not sure, ask them.
+    When the user refers to a filename, they're almost always referring to an existing file in the /home/user directory.
     """
 
 def get_interpreter():
