@@ -31,15 +31,17 @@ export async function POST(req: Request) {
     } else {
         const json = await req.json()
         const { sandboxID } = json
-        
-        if(!sandboxID) {
+
+        if (!sandboxID) {
             return new Response('Sandbox ID required', {
                 status: 400
             })
         }
+
+        let sandbox: Sandbox | undefined
         try {
-            const sandbox = await Sandbox.reconnect(sandboxID) 
-            await sandbox.keepAlive(3 * 60 * 1000) 
+            sandbox = await Sandbox.reconnect(sandboxID)
+            await sandbox.keepAlive(3 * 60 * 1000)
 
             const url = "https://" + sandbox.getHostname(8080)
             console.log("/api/kill-chat fetching url: " + url + "/killchat")
@@ -51,6 +53,10 @@ export async function POST(req: Request) {
             return new Response('Unexpected error', {
                 status: 500
             })
+        } finally {
+            if (sandbox) {
+                await sandbox.close()
+            }
         }
 
     }
@@ -60,7 +66,7 @@ export async function POST(req: Request) {
             status: 200
         })
     }
-    else{
+    else {
         console.log(data)
         return new Response('Unexpected error when calling /killchat', {
             status: 500
