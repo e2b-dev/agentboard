@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export async function POST(req: Request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
-    
+
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
         return new Response('Unauthorized', {
@@ -19,13 +19,22 @@ export async function POST(req: Request) {
     console.log("filePath: " + filePath)
     console.log("sandboxID: " + sandboxID)
 
-    const sandbox = await Sandbox.reconnect(sandboxID)
-    const buffer = await sandbox.downloadFile(filePath) 
+    let sandbox: Sandbox | undefined
+    try {
+        sandbox = await Sandbox.reconnect(sandboxID)
 
-    return new Response(buffer, {
-        headers: {
-            'Content-Type': 'application/octet-stream',
-            'Content-Disposition': `attachment; filename=${filePath}`
+        const buffer = await sandbox.downloadFile(filePath)
+
+        return new Response(buffer, {
+            headers: {
+                'Content-Type': 'application/octet-stream',
+                'Content-Disposition': `attachment; filename=${filePath}`
+            }
+        })
+
+    } finally {
+        if (sandbox) {
+            await sandbox.close()
         }
-    })
+    }
 }

@@ -22,8 +22,9 @@ AI_END_TOKEN = "AI<ET>"
 from interpreter.core.core import OpenInterpreter
 from posthog import Posthog
 
+
 def PythonE2BFactory(sandbox_id):
-    class PythonE2BSpecificSandbox():
+    class PythonE2BSpecificSandbox:
         """
         This class contains all requirements for being a custom language in Open Interpreter:
 
@@ -55,36 +56,40 @@ def PythonE2BFactory(sandbox_id):
                 on_stdout=on_stdout,
                 on_stderr=on_stderr,
                 on_exit=on_exit,
-        )
+            )
+
         def run(self, code):
             """Generator that yields a dictionary in LMC Format."""
             yield {
-                "type": "console", "format": "output",
-                "content": "Running code in E2B...\n"
+                "type": "console",
+                "format": "output",
+                "content": "Running code in E2B...\n",
             }
 
             exit_event = Event()
             out_queue = queue.Queue[e2b.ProcessMessage]()
 
-            sandbox = e2b.Sandbox.reconnect(sandbox_id)
+            with e2b.Sandbox.reconnect(sandbox_id) as sandbox:
+                self.run_python(
+                    sandbox,
+                    code,
+                    on_stdout=out_queue.put_nowait,
+                    on_stderr=out_queue.put_nowait,
+                    on_exit=exit_event.set,
+                )
 
-            self.run_python(
-                sandbox,
-                code,
-                on_stdout=out_queue.put_nowait,
-                on_stderr=out_queue.put_nowait,
-                on_exit=exit_event.set,
-            )
+                while not exit_event.is_set() or not out_queue.qsize() == 0:
+                    # TODO: Add max length here to ensure neverending programs don't run forever
+                    try:
+                        yield {
+                            "type": "console",
+                            "format": "output",
+                            "content": out_queue.get_nowait().line,
+                        }
+                        out_queue.task_done()
+                    except queue.Empty:
+                        pass
 
-            while not exit_event.is_set() or not out_queue.qsize() == 0:
-                try:
-                    yield {
-                        "type": "console", "format": "output",
-                        "content": out_queue.get_nowait().line
-                    }
-                    out_queue.task_done()
-                except queue.Empty:
-                    pass
         def stop(self):
             """Stops the code."""
             # Not needed here, because e2b.run_code isn't stateful.
@@ -94,8 +99,9 @@ def PythonE2BFactory(sandbox_id):
             """Terminates the entire process."""
             # Not needed here, because e2b.run_code isn't stateful.
             pass
-    
+
     return PythonE2BSpecificSandbox
+
 
 def setup_interpreter(the_interpreter, sandbox_id):
     the_interpreter.auto_run = True
@@ -165,17 +171,22 @@ def setup_interpreter(the_interpreter, sandbox_id):
     When the user refers to a filename, they're almost always referring to an existing file in the /home/user directory.
     """
 
+
 def get_interpreter():
     """
     This ensures that an interpreter instance is created for each request.
     """
+
     def dependency():
         new_interpreter = OpenInterpreter()
         yield new_interpreter
+
     return dependency
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -185,7 +196,7 @@ origins = [
     "https://www.agentboard.dev",
     "https://agentboard-git-staging-e2b.vercel.app",
     "https://agentboard-git-dev-e2b.vercel.app",
-    "https://agentboard-git-gce-refactor-e2b.vercel.app"
+    "https://agentboard-git-gce-refactor-e2b.vercel.app",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -198,6 +209,8 @@ app.add_middleware(
 """
 Test endpoint. Used to test if the server is running.
 """
+
+
 @app.get("/helloworld")
 def hello_world():
     try:
@@ -223,34 +236,47 @@ async def user_id_for_token(token: str) -> Optional[str]:
         logger.error(f"Supabase error when exchanging token for user id: {e}")
         return None
 
+
 def sandbox_id_for_user_id(user_id: str):
     """
     Search running sandboxes for the user's sandbox
     """
     running_sandboxes = e2b.Sandbox.list()
     for running_sandbox in running_sandboxes:
-        if running_sandbox.metadata and running_sandbox.metadata.get("userID", "") == user_id:
+        if (
+            running_sandbox.metadata
+            and running_sandbox.metadata.get("userID", "") == user_id
+        ):
             return running_sandbox.sandbox_id
     return None
+
 
 class UserMessage(BaseModel):
     role: str
     content: str
+
+
 class ChatRequest(BaseModel):
     messages: List[UserMessage]
+
+
 @app.post("/chat")
-async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(None), interpreter: OpenInterpreter = Depends(get_interpreter())):
+async def chat_endpoint(
+    chat_request: ChatRequest,
+    authorization: str = Header(None),
+    interpreter: OpenInterpreter = Depends(get_interpreter()),
+):
     try:
         if not authorization:
             logger.error("No authorization header")
             raise HTTPException(status_code=401, detail="No authorization header")
 
-        # Exchange token for user ID 
+        # Exchange token for user ID
         start_time = time.time()
         user_id = await user_id_for_token(authorization)
         if not user_id:
             logger.error("Invalid token")
-            raise HTTPException(status_code=401, detail="Invalid token") 
+            raise HTTPException(status_code=401, detail="Invalid token")
 
         # Exchange user ID for sandbox ID
         start_time = time.time()
@@ -260,26 +286,42 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
 
         # Connect to the sandbox, keep it alive, and setup interpreter
         start_time = time.time()
-        sandbox = e2b.Sandbox.reconnect(sandbox_id)
-        sandbox.keep_alive(60*60) # max limit is 1 hour as of 2-13-24
+
+        with e2b.Sandbox.reconnect(sandbox_id) as sandbox:
+            sandbox.keep_alive(60 * 60)  # max limit is 1 hour as of 2-13-24
+
         setup_interpreter(interpreter, sandbox_id)
-        
+
         # set messages to make this truly stateless
         logger.info("chat_request.messages: " + str(chat_request.messages))
         if len(chat_request.messages) > 1:
-            interpreter.messages = [{"role": x.role, "type": "message", "content": x.content} for x in chat_request.messages[:-1]]
+            interpreter.messages = [
+                {"role": x.role, "type": "message", "content": x.content}
+                for x in chat_request.messages[:-1]
+            ]
         else:
             interpreter.messages = []
-        logger.info("Interpreter messages before interpreter.chat():" + str(interpreter.messages))
+        logger.info(
+            "Interpreter messages before interpreter.chat():"
+            + str(interpreter.messages)
+        )
 
         # record PostHog analytics
-        posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
-        posthog.capture(user_id, "chat_message_sent", {"messages": chat_request.messages[-1].content})
+        posthog = Posthog(
+            os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST")
+        )
+        posthog.capture(
+            user_id,
+            "chat_message_sent",
+            {"messages": chat_request.messages[-1].content},
+        )
 
         def event_stream(start_time):
             first_response_sent = False
-            for result in interpreter.chat(chat_request.messages[-1].content, stream=True, display=False):
-                
+            for result in interpreter.chat(
+                chat_request.messages[-1].content, stream=True, display=False
+            ):
+
                 print("Result: ", result)
                 if result:
                     # get the first key and value in separate variables
@@ -300,18 +342,22 @@ async def chat_endpoint(chat_request: ChatRequest, authorization: str = Header(N
                             yieldval = f"\n```shell output-bash\n"
                         elif "end" in result and result["end"]:
                             yieldval = "\n```\n"
-                        elif 'format' in result and result["format"] == 'output':
+                        elif "format" in result and result["format"] == "output":
                             yieldval = result["content"]
                     else:
                         logger.info(f"UNEXPECTED TYPE: {result['type']}")
                         logger.info(f"FULL RESULT OF UNEXPECTED TYPE: {result}")
                     if not first_response_sent:
                         first_response_sent = True
-                        logger.info(f"/chat: First response sent in {time.time() - start_time}")
+                        logger.info(
+                            f"/chat: First response sent in {time.time() - start_time}"
+                        )
                     yield f"{AI_START_TOKEN}{urllib.parse.quote(str(yieldval))}{AI_END_TOKEN}"
 
         start_time = time.time()
-        return StreamingResponse(event_stream(start_time), media_type="text/event-stream")
+        return StreamingResponse(
+            event_stream(start_time), media_type="text/event-stream"
+        )
     except Exception as e:
         print("Exception: ", e)
         logger.error("Exception:", e)

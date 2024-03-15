@@ -1,5 +1,5 @@
 
-import { Sandbox }  from 'e2b'
+import { Sandbox } from 'e2b'
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server'
 
@@ -8,14 +8,14 @@ export async function GET() {
     const supabase = createClient(cookieStore)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-        return new Response(JSON.stringify({error: 'Unauthorized'}), {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401
         })
     }
 
-    try {  
+    let sandbox;
+    try {
         // connect to existing sandbox or create a new one
-        let sandbox;
         const runningSandboxes = await Sandbox.list()
         const found = runningSandboxes.find(s => s.metadata?.userID === user.id)
         if (found) {
@@ -30,9 +30,7 @@ export async function GET() {
         }
 
         // 5 minutes in development, 10 mins in production
-        await sandbox.keepAlive(process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 10 * 60 * 1000) 
-
-        await sandbox.close()
+        await sandbox.keepAlive(process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 10 * 60 * 1000)
 
         console.log("Sandbox created, id: ", sandbox.id)
         return new Response(JSON.stringify({ sandboxID: sandbox.id }), {
@@ -42,11 +40,14 @@ export async function GET() {
             status: 200
         })
     }
-    catch (e){
+    catch (e) {
         console.log("Error creating sandbox: ", e)
         return new Response((JSON.stringify(e)), {
             status: 500
         })
+    } finally {
+        if (sandbox) {
+            await sandbox.close()
+        }
     }
-
 }
