@@ -1,2 +1,6 @@
 .vercel
 agent_frameworks
+.idea
+.vscode
+.env
+.next
