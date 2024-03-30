@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "agentboard-backed"
+version = "0.1.0"
+description = ""
+authors = ["Jakub Novak <jakub@e2b.dev>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+e2b = "^0.14.12"
+fastapi = "^0.110.0"
+pydantic = "^2.6.4"
+supabase = "^2.4.1"
+posthog = "^3.5.0"
+open-interpreter = "0.2.0"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.0.1"
+black = "^24.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
