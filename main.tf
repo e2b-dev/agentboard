@@ -240,3 +240,10 @@ resource "vercel_project_environment_variable" "resend_api_key" {
   project_id = vercel_project.agentboard.id
   target     = ["production", "preview", "development"]
 }
+
+resource "vercel_project_environment_variable" "agentboard_api_url" {
+  key        = "NEXT_PUBLIC_AGENTBOARD_API_URL"
+  value      = google_cloud_run_v2_service.backend_server.uri
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
