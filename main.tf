@@ -39,6 +39,21 @@ provider "google" {
   zone    = var.gcp_zone
 }
 
+module "github" {
+  source = "./terraform/github-action"
+
+  github_repository   = var.github_repository
+  github_organization = var.github_organization
+
+  artifact_registry_repository_name = module.init.artifact_registry_repository_name
+  gcp_project_id                    = var.gcp_project_id
+  gcp_region                        = var.gcp_region
+  gcp_zone                          = var.gcp_zone
+  terraform_state_bucket            = var.terraform_state_bucket
+
+  prefix = var.prefix
+}
+
 module "init" {
   source = "./terraform/init"
 
