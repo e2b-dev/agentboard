@@ -191,6 +191,8 @@ provider "vercel" {
 
 resource "vercel_project" "agentboard" {
   name = "agentboard"
+  root_directory = "frontend"
+
   git_repository = {
     type = "github"
     repo = "${var.github_organization}/${var.github_repository}"
