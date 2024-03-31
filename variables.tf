@@ -22,6 +22,11 @@ variable "github_repository" {
   default = "agentboard"
 }
 
+variable "vercel_team" {
+  type    = string
+  default = "e2b"
+}
+
 variable "prefix" {
   type        = string
   description = "The prefix to use for all resources in this module"

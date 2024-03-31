@@ -22,6 +22,14 @@ resource "google_secret_manager_secret" "supabase_secret_key" {
   }
 }
 
+resource "google_secret_manager_secret" "supabase_anon_key" {
+  secret_id = "${var.prefix}supabase-anon-key"
+
+  replication {
+    auto {}
+  }
+}
+
 resource "google_secret_manager_secret" "supabase_url" {
   secret_id = "${var.prefix}supabase-url"
 
@@ -40,6 +48,22 @@ resource "google_secret_manager_secret" "posthog_api_key" {
 
 resource "google_secret_manager_secret" "posthog_host" {
   secret_id = "${var.prefix}posthog-host"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "vercel_api_token" {
+  secret_id = "${var.prefix}vercel-api-token"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "resend_api_token" {
+  secret_id = "${var.prefix}resend-api-token"
 
   replication {
     auto {}

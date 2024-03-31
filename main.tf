@@ -20,6 +20,10 @@ terraform {
       source  = "hashicorp/random"
       version = "3.5.1"
     }
+    vercel = {
+      source  = "vercel/vercel"
+      version = "1.4.0"
+    }
   }
 }
 
@@ -61,6 +65,10 @@ module "init" {
   labels = var.labels
 }
 
+data "google_secret_manager_secret_version" "vercel_api_token" {
+  secret = module.init.vercel_api_token_secret_name
+}
+
 data "google_secret_manager_secret_version" "e2b_api_key" {
   secret = module.init.e2b_api_key_secret_name
 }
@@ -73,15 +81,24 @@ data "google_secret_manager_secret_version" "supabase_secret_key" {
   secret = module.init.supabase_secret_key_secret_name
 }
 
+data "google_secret_manager_secret_version" "supabase_anon_key" {
+  secret = module.init.supabase_anon_key_secret_name
+}
+
 data "google_secret_manager_secret_version" "supabase_url" {
   secret = module.init.supabase_url_secret_name
 }
+
 data "google_secret_manager_secret_version" "posthog_api_key" {
   secret = module.init.posthog_api_key_secret_name
 }
 
 data "google_secret_manager_secret_version" "posthog_host" {
   secret = module.init.posthog_host_secret_name
+}
+
+data "google_secret_manager_secret_version" "resend_api_key" {
+  secret = module.init.resend_api_token_secret_name
 }
 
 
@@ -94,6 +111,7 @@ resource "docker_image" "backend_image" {
   pull_triggers = [data.docker_registry_image.backend_image.sha256_digest]
 }
 
+# Backend Server
 resource "google_cloud_run_v2_service" "backend_server" {
   name     = "${var.prefix}agentboard-backend-server"
   location = var.gcp_region
@@ -158,4 +176,65 @@ resource "google_cloud_run_service_iam_binding" "admin_server" {
   members = [
     "allUsers"
   ]
+}
+
+# Vercel
+
+provider "vercel" {
+  # Or omit this for the api_token to be read
+  # from the VERCEL_API_TOKEN environment variable
+  api_token = data.google_secret_manager_secret_version.vercel_api_token.secret_data
+
+  # Optional default team for all resources
+  team = var.vercel_team
+}
+
+resource "vercel_project" "agentboard" {
+  name = "agentboard"
+  git_repository = {
+    type = "github"
+    repo = "${var.github_organization}/${var.github_repository}"
+  }
+}
+
+resource "vercel_project_environment_variable" "supabase_url" {
+  key        = "NEXT_PUBLIC_SUPABASE_URL"
+  value      = data.google_secret_manager_secret_version.supabase_url.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
+
+resource "vercel_project_environment_variable" "supabase_anon_key" {
+  key        = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  value      = data.google_secret_manager_secret_version.supabase_anon_key.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
+
+resource "vercel_project_environment_variable" "e2b_api_key" {
+  key        = "E2B_API_KEY"
+  value      = data.google_secret_manager_secret_version.e2b_api_key.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
+
+resource "vercel_project_environment_variable" "posthog_api_key" {
+  key        = "NEXT_PUBLIC_POSTHOG_KEY"
+  value      = data.google_secret_manager_secret_version.posthog_api_key.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
+
+resource "vercel_project_environment_variable" "posthog_host" {
+  key        = "NEXT_PUBLIC_POSTHOG_HOST"
+  value      = data.google_secret_manager_secret_version.posthog_host.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
+}
+
+resource "vercel_project_environment_variable" "resend_api_key" {
+  key        = "RESEND_API_KEY"
+  value      = data.google_secret_manager_secret_version.supabase_url.secret_data
+  project_id = vercel_project.agentboard.id
+  target     = ["production", "preview", "development"]
 }
