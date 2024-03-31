@@ -106,7 +106,7 @@ resource "google_cloud_run_v2_service" "backend_server" {
       image = docker_image.backend_image.repo_digest
 
       ports {
-        container_port = 8080
+        container_port = 80
         name           = "http1"
       }
 
