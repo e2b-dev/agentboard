@@ -21,7 +21,7 @@ if is_prod:
 else:
     posthog = Posthog("", "", disabled=True)
 
-models ={
+models = {
     "GPT-3.5": "gpt-3.5-turbo-0125",
     "GPT-4": "gpt-4-turbo-preview",
 }

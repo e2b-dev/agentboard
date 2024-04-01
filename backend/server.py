@@ -68,7 +68,6 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_endpoint(
     chat_request: ChatRequest,
-
     user_id: Annotated[str, Security(get_current_user)],
     interpreter: OpenInterpreter = Depends(get_interpreter()),
 ):
@@ -92,8 +91,7 @@ async def chat_endpoint(
         interpreter.messages = []
 
     logger.debug(
-        "Interpreter messages before interpreter.chat():"
-        + str(interpreter.messages)
+        "Interpreter messages before interpreter.chat():" + str(interpreter.messages)
     )
 
     # record PostHog analytics

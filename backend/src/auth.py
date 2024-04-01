@@ -15,7 +15,7 @@ async def user_id_for_token(token: str) -> Optional[str]:
     # Remove 'Bearer ' prefix if present
     prefix = "Bearer "
     if token.startswith(prefix):
-        token = token[len(prefix):]
+        token = token[len(prefix) :]
 
     # Verify the token with Supabase
     try:
@@ -38,4 +38,3 @@ async def get_current_user(authorization: str = Header(None)):
         logger.error("Invalid token")
         raise HTTPException(status_code=401, detail="Invalid token")
     return user_id
-

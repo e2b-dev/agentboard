@@ -75,7 +75,7 @@ def e2b_factory(sandbox_id):
                         yield {
                             "type": "console",
                             "format": "output",
-                            "content": out_queue.get_nowait().line + '\n',
+                            "content": out_queue.get_nowait().line + "\n",
                         }
                         out_queue.task_done()
                     except queue.Empty:

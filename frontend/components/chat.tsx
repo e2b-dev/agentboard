@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import {useState, useEffect, useRef, ComponentProps, ChangeEvent, FormEvent} from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 import { type User } from '@supabase/supabase-js'
@@ -15,7 +15,7 @@ import { CHAT_API_ENDPOINT } from '@/lib/constants'
 import {useAgent} from "@/lib/hooks/use-agent";
 import {Feedback} from "@/components/feedback";
 
-interface ChatProps extends React.ComponentProps<'div'> {
+interface ChatProps extends ComponentProps<'div'> {
   initialMessages?: Message[]
   id?: string
   user?: User
@@ -25,12 +25,6 @@ interface SandboxData {
 }
 
 const sandboxPort = 49982
-const startToken = 'AI<ST>'
-const endToken = 'AI<ET>'
-const regexPattern = new RegExp(
-  `${startToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(.*?)${endToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
-  'gs'
-)
 
 export function Chat({ id, initialMessages, className, user }: ChatProps) {
   /* State for sandbox management */
@@ -104,7 +98,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
 
   /* Stores user file input in pendingFileInputValue */
   async function fileUploadOnChange(
-    e: React.ChangeEvent<HTMLInputElement> | DragEvent
+    e: ChangeEvent<HTMLInputElement> | DragEvent
   ) {
     // indicate to user that file is uploading
 
@@ -374,7 +368,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
   }
 
   /* Stores user text input in pendingMessageInputValue */
-  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleMessageSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setChatResponseLoading(true)
     if (!input?.trim()) {
@@ -403,6 +397,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
       setPendingMessagesValue(updatedMessages)
     }
   }
+
   /* Sends the pending message to sandbox once it is created */
   useEffect(() => {
     const executePendingSubmitEvent = async () => {

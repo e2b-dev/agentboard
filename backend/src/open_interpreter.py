@@ -96,6 +96,7 @@ def get_interpreter():
     """
     This ensures that an interpreter instance is created for each request.
     """
+
     def dependency(user_id: Annotated[str, Security(get_current_user)]):
         # Exchange user ID for sandbox ID
         sandbox_id = sandbox_id_for_user_id(user_id)
