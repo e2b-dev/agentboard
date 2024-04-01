@@ -33,6 +33,7 @@ interface SandboxData {
   sandboxID: string
 }
 
+const sandboxPort = 49982
 const startToken = 'AI<ST>'
 const endToken = 'AI<ET>'
 const regexPattern = new RegExp(
@@ -431,6 +432,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
       console.log('Error when fetching chat response: ', error)
     }
   }
+
   /* Stores user text input in pendingMessageInputValue */
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -476,13 +478,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
 
   /* Allows the user to download files from the sandbox */
   const handleSandboxLink = (href: string) => {
-    fetch('/api/download-file', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ sandboxID: sandboxID, filePath: href })
-    })
+    fetch(`https://${sandboxPort}-${sandboxID}.e2b.dev/file?path=${href}`)
       .then(response => {
         if (!response.ok) throw new Error('Network response was not ok.')
         return response.blob()
