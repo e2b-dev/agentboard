@@ -14,8 +14,6 @@ TIMEOUT = 30
 
 # Supabase client
 supabase = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_KEY"))
-AI_START_TOKEN = "AI<ST>"
-AI_END_TOKEN = "AI<ET>"
 
 # Posthog client
 if is_prod:

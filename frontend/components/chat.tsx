@@ -337,8 +337,8 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
           }
           // Load balancer has a timeout of 10 minutes from first to last streamed byte per response.
           // This prevents the user from seeing randomly truncated output.
-          if (Date.now() - startTime > 5700000) {
-            // 9mins 30 seconds seconds
+          if (Date.now() - startTime > 3 * 60 * 1000) {
+            // 3 minutes timeout
             // Notify the user about the timeout
             toast.error(
               'Sorry, the response was too lengthy and it timed out. Try again with a shorter task.'
@@ -355,29 +355,15 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
           }
 
           const text = textDecoder.decode(value)
-          let fullyFormattedText = decodeURIComponent(text)
+          messageBuffer += decodeURIComponent(text)
 
-          // use regex to parse out the data between the start and end tokens
-          const matches = fullyFormattedText.match(regexPattern)
-          if (!matches) {
-            continue
+          const lastMessage = {
+            id: id || 'default-id',
+            content: messageBuffer,
+            role: 'assistant' as 'assistant'
           }
+          setMessages([...previousMessages, lastMessage])
 
-          // split the data into chunks
-          const chunks = matches.map(match =>
-            match.replace(new RegExp(`^${startToken}|${endToken}$`, 'g'), '')
-          )
-
-          // process each chunk individually
-          for (const chunk of chunks) {
-            messageBuffer += chunk
-            const lastMessage = {
-              id: id || 'default-id',
-              content: messageBuffer,
-              role: 'assistant' as 'assistant'
-            }
-            setMessages([...previousMessages, lastMessage])
-          }
         }
       }
 

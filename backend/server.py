@@ -12,7 +12,7 @@ from interpreter.core.core import OpenInterpreter
 
 from src.auth import get_current_user
 from src.open_interpreter import get_interpreter
-from src.settings import AI_START_TOKEN, AI_END_TOKEN, posthog, models
+from src.settings import posthog, models
 
 
 class EndpointFilter(logging.Filter):
@@ -132,6 +132,6 @@ async def chat_endpoint(
                     pass
                 else:
                     raise Exception(f"Unknown result type: {result['type']}")
-                yield f"{AI_START_TOKEN}{urllib.parse.quote(str(yieldval))}{AI_END_TOKEN}"
+                yield f"{urllib.parse.quote(str(yieldval))}"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

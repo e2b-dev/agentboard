@@ -14,7 +14,7 @@ const exampleMessages = [
   },
   {
     heading: 'Get audio from a YouTube video',
-    message: `Extract the audio from this youtube video https://www.youtube.com/watch?v=WTOm65IZneg`
+    message: `Extract the audio from this youtube video https://www.youtube.com/watch?v=dQw4w9WgXcQ`
   }
 ]
 
