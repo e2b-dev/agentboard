@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import { nanoid } from '@/lib/utils'
 import { Chat } from '@/components/chat'

@@ -12,7 +12,7 @@ from interpreter.core.core import OpenInterpreter
 
 from src.auth import get_current_user
 from src.open_interpreter import get_interpreter
-from src.settings import AI_START_TOKEN, AI_END_TOKEN, posthog
+from src.settings import AI_START_TOKEN, AI_END_TOKEN, posthog, models
 
 
 class EndpointFilter(logging.Filter):
@@ -61,14 +61,26 @@ class UserMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[UserMessage]
+    agent: str
+    model: str
 
 
 @app.post("/chat")
 async def chat_endpoint(
     chat_request: ChatRequest,
+
     user_id: Annotated[str, Security(get_current_user)],
     interpreter: OpenInterpreter = Depends(get_interpreter()),
 ):
+    model = chat_request.model
+    if model not in models:
+        raise Exception(f"Model {model} not found")
+    interpreter.llm.model = models[model]
+
+    agent = chat_request.agent
+    if agent != "OPEN_INTERPRETER":
+        raise Exception(f"Agent {agent} not found")
+
     # set messages to make this truly stateless
     logger.debug("chat_request.messages: " + str(chat_request.messages))
     if len(chat_request.messages) > 1:

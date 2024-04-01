@@ -21,5 +21,9 @@ AI_END_TOKEN = "AI<ET>"
 if is_prod:
     posthog = Posthog(os.environ.get("POSTHOG_API_KEY"), os.environ.get("POSTHOG_HOST"))
 else:
-    posthog = Posthog("", "",disabled=True)
+    posthog = Posthog("", "", disabled=True)
 
+models ={
+    "GPT-3.5": "gpt-3.5-turbo-0125",
+    "GPT-4": "gpt-4-turbo-preview",
+}

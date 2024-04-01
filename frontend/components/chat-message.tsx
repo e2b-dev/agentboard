@@ -15,10 +15,11 @@ import {
   IconDownload
 } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
+import {AgentsEnum, ModelsEnum} from "@/lib/agents";
 
 interface ChatMessageProps {
   message: Message
-  agentType: string
+  agentType: AgentsEnum
   handleSandboxLink: (link: string) => void
 }
 
@@ -43,10 +44,10 @@ export function ChatMessage({
       >
         {message.role === 'user' ? (
           <IconUser />
-        ) : agentType === 'openai' ? (
-          <IconOpenAI />
-        ) : (
+        ) : agentType === AgentsEnum.OpenInterpreter ? (
           <IconOpenInterpreter />
+        ) : (
+          <IconOpenAI />
         )}
       </div>
       <div className="ml-4 flex-1 space-y-2 overflow-hidden px-1">

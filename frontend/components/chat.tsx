@@ -22,6 +22,7 @@ import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CHAT_API_ENDPOINT } from '@/lib/constants'
+import {useAgent} from "@/lib/hooks/use-agent";
 
 interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -73,6 +74,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
     id,
     body: { id }
   })
+  const { agent, model } = useAgent()
 
   const userPressedStopGeneration = useRef(false)
 
@@ -347,6 +349,8 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
           Authorization: `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
+          agent: agent,
+          model: model,
           messages: updatedMessages
         })
       })
@@ -515,7 +519,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
           <>
             <ChatList
               messages={messages}
-              agentType={agents['OPEN_INTERPRETER']}
+              agentType={agent}
               handleSandboxLink={handleSandboxLink}
               isLoading={chatResponseLoading}
             />

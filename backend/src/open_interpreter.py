@@ -10,7 +10,6 @@ from src.e2b_tool import e2b_factory
 
 def setup_interpreter(the_interpreter: OpenInterpreter, sandbox_id):
     the_interpreter.auto_run = True
-    the_interpreter.llm.model = "gpt-3.5-turbo-0125"
     the_interpreter.llm.max_tokens = 4096
     the_interpreter.llm.context_window = 16385
     the_interpreter.computer.terminate()
