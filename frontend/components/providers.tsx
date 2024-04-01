@@ -11,9 +11,7 @@ export function Providers({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemesProvider {...props}>
       <TooltipProvider>
-          <AgentContextProvider>
-                {children}
-          </AgentContextProvider>
+        <AgentContextProvider>{children}</AgentContextProvider>
       </TooltipProvider>
     </NextThemesProvider>
   )

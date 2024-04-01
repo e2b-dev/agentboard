@@ -12,14 +12,11 @@ import { IconSpinner, IconFeedback } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
-
 export function Feedback() {
   /* State for feedback dialog */
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const [feedbackText, setFeedbackText] = useState('')
   const [sendingFeedback, setSendingFeedback] = useState(false)
-
-
 
   return (
     <>

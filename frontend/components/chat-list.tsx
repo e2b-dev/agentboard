@@ -3,7 +3,7 @@ import { type Message } from 'ai'
 import { Separator } from '@/components/ui/separator'
 import { ChatMessage } from '@/components/chat-message'
 import { IconSpinner } from '@/components/ui/icons'
-import { AgentsEnum } from "@/lib/agents";
+import { AgentsEnum } from '@/lib/agents'
 
 export interface ChatList {
   messages: Message[]

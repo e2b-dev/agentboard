@@ -118,7 +118,6 @@ jobs:
           TERRAFORM_STATE_BUCKET: ${{ vars.E2B_TERRAFORM_STATE_BUCKET }}
           EXCLUDE_GITHUB: 0
 
-
   # The last successful release is used for determining which changed and what should be deployed in this release.
   release:
     name: Release

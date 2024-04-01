@@ -1,6 +1,13 @@
 'use client'
 
-import {useState, useEffect, useRef, ComponentProps, ChangeEvent, FormEvent} from 'react'
+import {
+  useState,
+  useEffect,
+  useRef,
+  ComponentProps,
+  ChangeEvent,
+  FormEvent
+} from 'react'
 import { toast } from 'react-hot-toast'
 import { useChat, type Message } from 'ai/react'
 import { type User } from '@supabase/supabase-js'
@@ -12,8 +19,8 @@ import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import { IconSpinner } from '@/components/ui/icons'
 import { CHAT_API_ENDPOINT } from '@/lib/constants'
-import {useAgent} from "@/lib/hooks/use-agent";
-import {Feedback} from "@/components/feedback";
+import { useAgent } from '@/lib/hooks/use-agent'
+import { Feedback } from '@/components/feedback'
 
 interface ChatProps extends ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -357,7 +364,6 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
             role: 'assistant' as 'assistant'
           }
           setMessages([...previousMessages, lastMessage])
-
         }
       }
 

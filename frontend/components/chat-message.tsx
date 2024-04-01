@@ -15,7 +15,7 @@ import {
   IconDownload
 } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
-import {AgentsEnum, ModelsEnum} from "@/lib/agents";
+import { AgentsEnum, ModelsEnum } from '@/lib/agents'
 
 interface ChatMessageProps {
   message: Message

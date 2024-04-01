@@ -60,7 +60,9 @@ export const AgentSelector = () => {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="px-0">
             <div className="flex shrink-0 select-none items-center justify-center rounded-full text-xs font-medium text-muted-foreground">
-              <span className="sm:hidden">{getInitials(Agents[agent])} / {Models[model]}</span>
+              <span className="sm:hidden">
+                {getInitials(Agents[agent])} / {Models[model]}
+              </span>
               <span className="hidden sm:block">
                 {Agents[agent]} / {Models[model]}
               </span>
