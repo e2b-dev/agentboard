@@ -34,4 +34,4 @@ RUN poetry install --no-root --only main && rm -rf $POETRY_CACHE_DIR
 COPY ./src src
 COPY ./server.py server.py
 
-ENTRYPOINT [ "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT [ "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]

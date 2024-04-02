@@ -26,3 +26,12 @@ apply:
 	-auto-approve \
 	-input=false \
 	-compact-warnings
+
+.PHONY: run
+run:
+	docker-compose up -d --build
+	cd frontend && pnpm dev
+
+.PHONY: stop
+stop:
+	docker-compose down
