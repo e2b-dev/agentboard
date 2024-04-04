@@ -23,7 +23,7 @@ export async function GET() {
     } else {
       // Sandbox not found, create a new one
       sandbox = await Sandbox.create({
-        template: 'ois-code-execution-sandbox',
+        template: 'code-interpreter-stateful',
         metadata: { userID: user.id }
       })
     }
