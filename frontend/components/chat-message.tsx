@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/icons'
 import { ChatMessageActions } from '@/components/chat-message-actions'
 import { AgentsEnum, ModelsEnum } from '@/lib/agents'
+import React from 'react'
 
 interface ChatMessageProps {
   message: Message
@@ -56,6 +57,23 @@ export function ChatMessage({
           remarkPlugins={[remarkGfm, remarkMath]}
           transformLinkUri={uri => uri}
           components={{
+            pre({ node, children, ...props }) {
+              if (children && Array.isArray(children)) {
+                const element = children[0] as React.ReactElement<
+                  any,
+                  string | React.JSXElementConstructor<any>
+                >
+                const match = /language-(\w+)/.exec(
+                  element?.props.className || ''
+                )
+
+                if (match && (match[1] == 'png' || match[1] == 'html')) {
+                  return <>{children}</>
+                }
+              }
+
+              return <pre>{children}</pre>
+            },
             a({ children, href }) {
               if (href && href.includes('/home/user/')) {
                 const extractedPath =

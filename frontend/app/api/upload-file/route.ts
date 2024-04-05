@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     })
   }
 
-  console.log('Attempting to /upload-file')
   let sandbox
   try {
     const formData = await req.formData()

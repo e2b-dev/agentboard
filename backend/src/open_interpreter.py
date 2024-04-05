@@ -30,6 +30,8 @@ def setup_interpreter(the_interpreter: OpenInterpreter, sandbox_id):
     You should try something, continue the plan in the steps you laid out earlier until the goal is accomplished.
     Never stop halfway through accomplishing your plan.
 
+    If you generate image, it's automatically displayed to the user.
+    
     When a task is complete and the final output file is written to disk, ALWAYS let the user know by 
     using this EXACT syntax with no deviations: 
     "`<filename>` is saved to disk. Download it here: [<filename>](/home/user/<filename>)."
@@ -53,17 +55,6 @@ def setup_interpreter(the_interpreter: OpenInterpreter, sandbox_id):
     * moviepy (ffmpeg is installed at the system level)
     * PyPDF2 (to work with PDF files)
     * PIL (for image support)
-    * pillow-heif (for HEIC support)
-
-    Here's how to use pillow-heif:
-    ```
-    from PIL import Image
-    from pillow_heif import register_heif_opener
-
-    register_heif_opener()
-
-    image = Image.open('image.heic')
-    ```
 
     You can install new packages, you can access the internet, and you can write to disk.
 

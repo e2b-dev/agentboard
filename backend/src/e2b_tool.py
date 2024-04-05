@@ -30,9 +30,10 @@ def e2b_factory(sandbox_id):
         You have access to python and internet, you can do whatever you want
         """
 
+
         @staticmethod
         def run_in_background(
-            code, on_message: Callable[[str], None], on_exit: Callable[[], None]
+            code, on_message: Callable[[str], None], on_rich_data: Callable[[dict], None], on_exit: Callable[[], None]
         ):
             with CodeInterpreter.reconnect(sandbox_id) as sandbox:
                 execution = sandbox.notebook.exec_cell(
@@ -52,6 +53,12 @@ def e2b_factory(sandbox_id):
                     else:
                         message += f"[Display data]: {result.text}\n"
                     if result.formats():
+                        for data_type in result.formats():
+                            on_rich_data({
+                                "type": data_type,
+                                "data": getattr(result, data_type)
+                            })
+
                         message += f"It has also following formats: {result.formats()}\n"
             elif execution.logs.stdout or execution.logs.stderr:
                 message = "Execution finished without any additional results"
@@ -71,12 +78,14 @@ def e2b_factory(sandbox_id):
 
             exit_event = Event()
             out_queue = queue.Queue[str]()
+            rich_data = queue.Queue[dict]()
 
             threading.Thread(
                 target=self.run_in_background,
                 args=(
                     code,
                     lambda message: out_queue.put(message),
+                    lambda data: rich_data.put(data),
                     lambda: exit_event.set(),
                 ),
             ).start()
@@ -96,6 +105,19 @@ def e2b_factory(sandbox_id):
                         "content": out_queue.get_nowait() + "\n",
                     }
                     out_queue.task_done()
+                except queue.Empty:
+                    pass
+
+            while not rich_data.qsize() == 0:
+                try:
+                    data = rich_data.get_nowait()
+                    print(data['type'])
+                    yield {
+                        "type": "console",
+                        "format": data['type'],
+                        "content": data['data'],
+                    }
+                    rich_data.task_done()
                 except queue.Empty:
                     pass
 

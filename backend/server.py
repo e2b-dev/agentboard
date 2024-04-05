@@ -102,6 +102,7 @@ async def chat_endpoint(
     )
 
     def event_stream():
+        other_content = []
         for result in interpreter.chat(
             chat_request.messages[-1].content, stream=True, display=False
         ):
@@ -124,12 +125,18 @@ async def chat_endpoint(
                         yieldval = f"\n```shell output-bash\n"
                     elif "end" in result and result["end"]:
                         yieldval = "\n```\n"
-                    elif "format" in result and result["format"] == "output":
-                        yieldval = result["content"]
+                    elif "format" in result:
+                        if result["format"] == "output":
+                            yieldval = result["content"]
+                        elif result["format"] == "png":
+                            other_content.append(f"\n```png\n{result['content']}\n```\n")
+                        elif result["format"] == "html":
+                            other_content.append(f"\n```html\n{result['content']}\n```\n")
                 elif result["type"] == "confirmation":
                     pass
                 else:
                     raise Exception(f"Unknown result type: {result['type']}")
                 yield f"{urllib.parse.quote(str(yieldval))}"
-
+        for content in other_content:
+            yield f"{urllib.parse.quote(str(content))}"
     return StreamingResponse(event_stream(), media_type="text/event-stream")
