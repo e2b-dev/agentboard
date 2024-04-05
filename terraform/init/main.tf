@@ -62,14 +62,6 @@ resource "google_secret_manager_secret" "vercel_api_token" {
   }
 }
 
-resource "google_secret_manager_secret" "resend_api_token" {
-  secret_id = "${var.prefix}resend-api-token"
-
-  replication {
-    auto {}
-  }
-}
-
 resource "google_artifact_registry_repository" "agentboard" {
   format        = "DOCKER"
   repository_id = "e2b-agentboard"

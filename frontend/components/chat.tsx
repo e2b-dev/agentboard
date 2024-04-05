@@ -20,8 +20,6 @@ import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 import { IconSpinner } from '@/components/ui/icons'
 import { CHAT_API_ENDPOINT } from '@/lib/constants'
 import { useAgent } from '@/lib/hooks/use-agent'
-import { Feedback } from '@/components/feedback'
-import {useSearchParams} from "next/navigation";
 
 interface ChatProps extends ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -78,7 +76,9 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
         .then(res => {
           if (!res.ok)
             throw new Error(
-              `HTTP error! status: ${res.status}, response: ${JSON.stringify(res)}`
+              `HTTP error! status: ${res.status}, response: ${JSON.stringify(
+                res
+              )}`
             )
           return res.json()
         })
@@ -484,7 +484,6 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
         loggedIn={!!user}
         sandboxID={sandboxID || ''}
       />
-      <Feedback />
     </>
   )
 }

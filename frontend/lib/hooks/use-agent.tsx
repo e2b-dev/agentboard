@@ -10,7 +10,7 @@ type AgentContextType = {
   setModel: (model: keyof typeof Models) => void
 }
 
-export const AgentContext = createContext<AgentContextType>({
+const AgentContext = createContext<AgentContextType>({
   agent: AgentsEnum.OpenInterpreter,
   model: ModelsEnum.GPT3,
   setAgent: () => {},

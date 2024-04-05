@@ -9,7 +9,15 @@ import { cn } from '@/lib/utils'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
+import { Feedback } from "@/components/feedback";
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'chatlio-widget': any
+    }
+  }
+}
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
@@ -60,6 +68,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <TailwindIndicator />
         </Providers>
         <Analytics />
+        <Feedback />
       </body>
     </html>
   )
