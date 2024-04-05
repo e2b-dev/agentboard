@@ -190,7 +190,7 @@ provider "vercel" {
 }
 
 resource "vercel_project" "agentboard" {
-  name           = "agentboard-dev"
+  name           = "agentboard"
   root_directory = "frontend"
   framework      = "nextjs"
 
