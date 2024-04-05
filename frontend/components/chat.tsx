@@ -21,6 +21,7 @@ import { IconSpinner } from '@/components/ui/icons'
 import { CHAT_API_ENDPOINT } from '@/lib/constants'
 import { useAgent } from '@/lib/hooks/use-agent'
 import { Feedback } from '@/components/feedback'
+import {useSearchParams} from "next/navigation";
 
 interface ChatProps extends ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -36,9 +37,6 @@ const sandboxPort = 49982
 export function Chat({ id, initialMessages, className, user }: ChatProps) {
   /* State for sandbox management */
   const [sandboxID, setSandboxID] = useState<string | null>(null)
-
-  /* State for first message submitted */
-  const [firstMessageSubmitted, setFirstMessageSubmitted] = useState(false)
 
   /* State for text input */
   const [pendingMessagesValue, setPendingMessagesValue] = useState<
@@ -127,7 +125,6 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
       }
     ]
     setMessages(newMessages)
-    setFirstMessageSubmitted(true)
     setPendingFileInputValue(file ? file : null)
   }
 
@@ -205,7 +202,6 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
         // Clear message history when the user logs out or their account is deleted
         setMessages([])
         setSandboxID(null)
-        setFirstMessageSubmitted(false)
       }
     })
 
@@ -380,9 +376,6 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
     if (!input?.trim()) {
       return
     }
-    if (!firstMessageSubmitted) {
-      setFirstMessageSubmitted(true)
-    }
 
     // add user message to the messages array
     const updatedMessages: Message[] = [
@@ -452,7 +445,7 @@ export function Chat({ id, initialMessages, className, user }: ChatProps) {
         </div>
       )}
       <div className={cn('pb-[200px] pt-4 md:pt-10', className)}>
-        {firstMessageSubmitted ? (
+        {messages.length ? (
           <>
             <ChatList
               messages={messages}

@@ -18,7 +18,7 @@ export async function Header() {
         </div>
       </div>
       <div className="flex w-1/3 items-center justify-center">
-        <div className="text-lg font-bold">Agentboard</div>
+          <div className="text-lg font-bold"><a href='/'>Agentboard</a></div>
       </div>
       <div className="flex w-1/3 items-end justify-end sm:mr-4">
         <AgentSelector />

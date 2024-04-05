@@ -5,12 +5,12 @@ import { IconArrowRight } from '@/components/ui/icons'
 
 const exampleMessages = [
   {
-    heading: 'Plot a graph from a CSV file',
-    message: `Use /home/user/Cities.csv to create a plot of latitude and temperature, then output it as an image`
+    heading: 'Plot a graph of a TESLA stock',
+    message: `Plot a graph of the TESLA stock performance for the last 30 days`
   },
   {
     heading: 'File conversion for an image',
-    message: 'Convert the image /home/user/agentboard-example.jpg to a png'
+    message: 'Download photo of the day from NASA website and convert the photo to a png'
   },
   {
     heading: 'Get audio from a YouTube video',

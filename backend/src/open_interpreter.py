@@ -59,6 +59,7 @@ def setup_interpreter(the_interpreter: OpenInterpreter, sandbox_id):
     You can install new packages, you can access the internet, and you can write to disk.
 
     When the user refers to a filename, they're almost always referring to an existing file in the /home/user directory.
+    Always prefer to use absolute paths when working with files.
     """
 
 
