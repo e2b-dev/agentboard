@@ -14,7 +14,7 @@ supabase = "^2.4.1"
 posthog = "^3.5.0"
 open-interpreter = "0.2.0"
 uvicorn = {extras = ["standard"], version = "^0.29.0"}
-e2b-code-interpreter = "^0.0.2"
+e2b-code-interpreter = "^0.0.3"
 
 [tool.poetry.group.dev.dependencies]
 python-dotenv = "^1.0.1"

@@ -36,6 +36,7 @@ origins = [
     "https://agentboard-git-staging-e2b.vercel.app",
     "https://agentboard-git-dev-e2b.vercel.app",
     "https://agentboard-git-gce-refactor-e2b.vercel.app",
+    "https://agentboard-dev-git-refactor-e2b.vercel.app",
 ]
 app.add_middleware(
     CORSMiddleware,
