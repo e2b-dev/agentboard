@@ -1,5 +1,3 @@
-export const OPEN_INTERPRETER = 'OPEN_INTERPRETER'
-
 export enum AgentsEnum {
   OpenInterpreter = 'OPEN_INTERPRETER'
 }

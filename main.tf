@@ -97,11 +97,6 @@ data "google_secret_manager_secret_version" "posthog_host" {
   secret = module.init.posthog_host_secret_name
 }
 
-data "google_secret_manager_secret_version" "resend_api_key" {
-  secret = module.init.resend_api_token_secret_name
-}
-
-
 data "docker_registry_image" "backend_image" {
   name = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${module.init.artifact_registry_repository_name}/backend"
 }
@@ -190,7 +185,7 @@ provider "vercel" {
 }
 
 resource "vercel_project" "agentboard" {
-  name           = "agentboard-dev"
+  name           = "${var.prefix}${var.vercel_project}"
   root_directory = "frontend"
   framework      = "nextjs"
 
@@ -231,13 +226,6 @@ resource "vercel_project_environment_variable" "posthog_api_key" {
 resource "vercel_project_environment_variable" "posthog_host" {
   key        = "NEXT_PUBLIC_POSTHOG_HOST"
   value      = data.google_secret_manager_secret_version.posthog_host.secret_data
-  project_id = vercel_project.agentboard.id
-  target     = ["production", "preview", "development"]
-}
-
-resource "vercel_project_environment_variable" "resend_api_key" {
-  key        = "RESEND_API_KEY"
-  value      = data.google_secret_manager_secret_version.supabase_url.secret_data
   project_id = vercel_project.agentboard.id
   target     = ["production", "preview", "development"]
 }

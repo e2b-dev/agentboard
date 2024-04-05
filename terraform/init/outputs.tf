@@ -30,10 +30,6 @@ output "vercel_api_token_secret_name" {
   value = google_secret_manager_secret.vercel_api_token.secret_id
 }
 
-output "resend_api_token_secret_name" {
-  value = google_secret_manager_secret.resend_api_token.secret_id
-}
-
 output "artifact_registry_repository_name" {
   value = google_artifact_registry_repository.agentboard.name
 }

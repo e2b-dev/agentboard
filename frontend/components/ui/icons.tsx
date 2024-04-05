@@ -17,10 +17,10 @@ function IconAgentboard({ className, ...props }: React.ComponentProps<'svg'>) {
       <style>
         {`
           #icon-agentboard {
-           fill: black
+           fill: white
           }
-          @media (prefers-color-scheme: dark) {
-            #icon-agentboard { fill: white }
+          @media (prefers-color-scheme: light) {
+            #icon-agentboard { fill: black }
       }`}
       </style>
       <path
@@ -245,10 +245,10 @@ function IconUpload({ className, ...props }: React.ComponentProps<'svg'>) {
       <style>
         {`
           #icon-upload {
-           fill: black
+           fill: white
           }
-          @media (prefers-color-scheme: dark) {
-            #icon-upload { fill: white }
+          @media (prefers-color-scheme: light) {
+            #icon-upload { fill: black }
           }`}
       </style>
       <path
@@ -320,32 +320,13 @@ function IconOpenInterpreter({
       <style>
         {`
           #open-interpreter {
-           fill: white
+           fill: black
           }
-          @media (prefers-color-scheme: dark) {
-            #open-interpreter { fill: black }
+          @media (prefers-color-scheme: light) {
+            #open-interpreter { fill: white }
           }`}
       </style>
       <circle id="open-interpreter" fill="inherit" cx="50" cy="50" r="50" />
-    </svg>
-  )
-}
-
-function IconFeedback({ className, ...props }: React.ComponentProps<'svg'>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn('h-4 w-4', className)}
-      {...props}
-    >
-      <g>
-        <path fill="none" d="M0 0h24v24H0z" />
-        <path
-          d="M6.455 19L2 22.5V4a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6.455zM4 18.385L5.763 17H20V5H4v13.385zM11 13h2v2h-2v-2zm0-6h2v5h-2V7z"
-          fill="white"
-        />
-      </g>
     </svg>
   )
 }
@@ -368,6 +349,5 @@ export {
   IconClose,
   IconChevronUpDown,
   IconOpenInterpreter,
-  IconGoogle,
-  IconFeedback
+  IconGoogle
 }

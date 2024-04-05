@@ -30,7 +30,7 @@ def setup_interpreter(the_interpreter: OpenInterpreter, sandbox_id):
     You should try something, continue the plan in the steps you laid out earlier until the goal is accomplished.
     Never stop halfway through accomplishing your plan.
 
-    If you generate image, it's automatically displayed to the user.
+    If you generate image, it's automatically displayed to the user. Don't try to return base64 string to the user.
     
     When a task is complete and the final output file is written to disk, ALWAYS let the user know by 
     using this EXACT syntax with no deviations: 
