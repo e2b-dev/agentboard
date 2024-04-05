@@ -1,46 +1,9 @@
-# Build the docker container locally. 
-In `backend/`, run 
-```
-docker build -t us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod .
-```
+# Agentboard Backend
 
-# Run the docker container locally
-In `backend/`, run 
-```
-docker rm -f ois-container && docker run -d --name ois-container -p 8080:80 -e OPENAI_API_KEY=$OPENAI_API_KEY -e E2B_API_KEY=$E2B_API_KEY -e SUPABASE_URL=$AGB_DEV_SUPABASE_URL -e SUPABASE_KEY=$AGB_DEV_SUPABASE_SECRET_KEY -e POSTHOG_HOST=$POSTHOG_HOST -e POSTHOG_API_KEY=$POSTHOG_API_KEY us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod
-```
+Uses [Open Interpreter](https://github.com/OpenInterpreter/open-interpreter) running the code in [e2b](https://github.com/e2b-dev/E2B) sandboxes.
 
-# Push the docker container to the artifact repo
-In `backend/`, run 
-```
-docker push us-central1-docker.pkg.dev/agentboard-prod/agentboard-fastapi-server/server:prod
-```
+##  Running backend locally
 
-# Update Instance Group
-Trigger a rolling restart of the VMs so that they pick up the new docker container. In `backend/` run
-```
-gcloud compute instance-groups managed rolling-action restart instance-group-1 --zone=us-east1-b --max-unavailable=1
-```
-
-# Connect to VM via SSH
-```
-gcloud compute ssh --zone "us-east1-b" "instance-name" --project "agentboard-prod"
-# once you're inside, get the container id
-docker ps
-docker container logs -f CONTAINER-ID
-```
-
-# Test load balancer test endpoint
-```
-curl https://api.agentboard.dev/helloworld
-```
-
-Future note: Instead of restarting the VMs which has a lot of downtime, consider using the gcloud instance update feature:
-
-https://stackoverflow.com/questions/60674936/auto-update-pull-docker-image-on-gcp-instance-groups-with-container-optimized-os
-Specifically this one:
-```
-for i in $(gcloud compute instances list --filter NAME~"app-backend-instance-group" --format="value(NAME)");do gcloud beta compute instances update-container $i --zone europe-west3-c --container-image=gcr.io/deployments-337523/app-backend:latest;done
-```
-It's no longer in beta:
-https://cloud.google.com/sdk/gcloud/reference/compute/instances/update
+1. Make sure you have the correct `.env` file.
+2. Install the dependencies with `poetry install` (if you don't have poetry, here's an [installation guide](https://python-poetry.org/docs/#installation).
+3. Run the backend with `uvicorn main:app --reload --port 8080`.

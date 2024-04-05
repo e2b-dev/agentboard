@@ -1,0 +1,136 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform.d/plugin-cache
+
+jobs:
+  changes:
+    name: Repository changes
+    runs-on: ubuntu-22.04
+    outputs:
+      get-version: ${{ steps.get-version.outputs.version }}
+      backend: ${{ steps.filter.outputs.backend }}
+      terraform: ${{ steps.filter.outputs.terraform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get the last release
+        id: last_release
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          latest: true
+          prerelease: false
+          draft: false
+
+      - name: Find changes since the last release
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ steps.last_release.outputs.tag_name }}
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/backend.yml'
+            terraform:
+                - '**/*.tf'
+
+      - name: Get next version
+        id: get-version
+        run: |
+          version=${{ steps.last_release.outputs.tag_name }}
+          result=$(echo ${version} | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          echo "::set-output name=version::$result"
+
+  backend:
+    name: Backend server
+    needs: changes
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/backend.yml
+    secrets:
+      workload_identity_provider: ${{ secrets.E2B_WORKLOAD_IDENTITY_PROVIDER }}
+      service_account_email: ${{ vars.E2B_SERVICE_ACCOUNT_EMAIL }}
+      gcp_project_id: ${{ secrets.E2B_GCP_PROJECT_ID }}
+
+  deploy:
+    name: Deploy
+    needs: [backend]
+    if: |
+      always() && ( 
+        needs.changes.outputs.terraform == 'true' ||
+        needs.backend.result == 'success'
+      )
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Service Account
+        uses: google-github-actions/auth@v2
+        with:
+          create_credentials_file: true
+          service_account: ${{ vars.E2B_SERVICE_ACCOUNT_EMAIL }}
+          workload_identity_provider: ${{ secrets.E2B_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Create Terraform Plugin Cache Dir
+        run: mkdir --parents $TF_PLUGIN_CACHE_DIR
+
+      - name: Init Terraform
+        run: make init
+        env:
+          GCP_PROJECT_ID: ${{ vars.E2B_GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.E2B_GCP_REGION }}
+          GCP_ZONE: ${{ vars.E2B_GCP_ZONE }}
+          PREFIX: ${{ vars.E2B_PREFIX }}
+          TERRAFORM_STATE_BUCKET: ${{ vars.E2B_TERRAFORM_STATE_BUCKET }}
+          EXCLUDE_GITHUB: 0
+
+      - name: Deploy Terraform
+        run: make apply
+        env:
+          GCP_PROJECT_ID: ${{ vars.E2B_GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.E2B_GCP_REGION }}
+          GCP_ZONE: ${{ vars.E2B_GCP_ZONE }}
+          PREFIX: ${{ vars.E2B_PREFIX }}
+          TERRAFORM_STATE_BUCKET: ${{ vars.E2B_TERRAFORM_STATE_BUCKET }}
+          EXCLUDE_GITHUB: 0
+
+  # The last successful release is used for determining which changed and what should be deployed in this release.
+  release:
+    name: Release
+    needs: [changes, deploy]
+    if: |
+      always() &&
+      needs.deploy.result == 'success'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: API ${{ needs.changes.outputs.get-version }}
+          tag: ${{ needs.changes.outputs.get-version }}
+          commit: main
+          generateReleaseNotes: true

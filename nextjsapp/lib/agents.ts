@@ -1,1 +1,0 @@
-export const OPEN_INTERPRETER = "OPEN_INTERPRETER";
