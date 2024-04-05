@@ -1,0 +1,15 @@
+# This is a config for E2B sandbox template.
+# You can use 'template_id' (cawt9rqxz1924avx5sdl) or 'template_name (ois-code-execution-sandbox) from this config to spawn a sandbox:
+
+# Python SDK
+# from e2b import Sandbox
+# sandbox = Sandbox(template='ois-code-execution-sandbox')
+
+# JS SDK
+# import { Sandbox } from 'e2b'
+# const sandbox = await Sandbox.create({ template: 'ois-code-execution-sandbox' })
+
+start_cmd = "/home/user/.jupyter/start-up.sh"
+dockerfile = "e2b.Dockerfile"
+template_name = "ois-code-execution-sandbox"
+template_id = "cawt9rqxz1924avx5sdl"
