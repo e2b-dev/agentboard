@@ -128,10 +128,8 @@ async def chat_endpoint(
                     elif "format" in result:
                         if result["format"] == "output":
                             yieldval = result["content"]
-                        elif result["format"] == "png":
+                        elif result["format"] == "image":
                             other_content.append(f"\n```png\n{result['content']}\n```\n")
-                        elif result["format"] == "html":
-                            other_content.append(f"\n```html\n{result['content']}\n```\n")
                 elif result["type"] == "confirmation":
                     pass
                 else:

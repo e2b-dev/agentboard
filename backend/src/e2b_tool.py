@@ -30,10 +30,9 @@ def e2b_factory(sandbox_id):
         You have access to python and internet, you can do whatever you want
         """
 
-
         @staticmethod
         def run_in_background(
-            code, on_message: Callable[[str], None], on_rich_data: Callable[[dict], None], on_exit: Callable[[], None]
+            code, on_message: Callable[[str], None], on_rich_data: Callable[[str], None], on_exit: Callable[[], None]
         ):
             with CodeInterpreter.reconnect(sandbox_id) as sandbox:
                 execution = sandbox.notebook.exec_cell(
@@ -52,12 +51,8 @@ def e2b_factory(sandbox_id):
                         message += f"[Main result]: {result.text}\n"
                     else:
                         message += f"[Display data]: {result.text}\n"
-                    if result.formats():
-                        for data_type in result.formats():
-                            on_rich_data({
-                                "type": data_type,
-                                "data": getattr(result, data_type)
-                            })
+                    if result.png:
+                        on_rich_data(result.png)
 
                         message += f"It has also following formats: {result.formats()}\n"
             elif execution.logs.stdout or execution.logs.stderr:
@@ -78,14 +73,14 @@ def e2b_factory(sandbox_id):
 
             exit_event = Event()
             out_queue = queue.Queue[str]()
-            rich_data = queue.Queue[dict]()
+            images = queue.Queue[str]()
 
             threading.Thread(
                 target=self.run_in_background,
                 args=(
                     code,
                     lambda message: out_queue.put(message),
-                    lambda data: rich_data.put(data),
+                    lambda image: images.put(image),
                     lambda: exit_event.set(),
                 ),
             ).start()
@@ -108,16 +103,15 @@ def e2b_factory(sandbox_id):
                 except queue.Empty:
                     pass
 
-            while not rich_data.qsize() == 0:
+            while not images.qsize() == 0:
                 try:
-                    data = rich_data.get_nowait()
-                    print(data['type'])
+                    image_data = images.get_nowait()
                     yield {
                         "type": "console",
-                        "format": data['type'],
-                        "content": data['data'],
+                        "format": "image",
+                        "content": image_data,
                     }
-                    rich_data.task_done()
+                    images.task_done()
                 except queue.Empty:
                     pass
 

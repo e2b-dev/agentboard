@@ -95,11 +95,6 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   if (language == 'png') {
     return <img alt="generated-image" src={`data:image/png;base64,${value}`} />
   }
-  if (language == 'html') {
-    return (
-      <div dangerouslySetInnerHTML={{ __html: value }} className="dataframe" />
-    )
-  }
 
   return (
     <div className="codeblock relative w-full bg-zinc-950 font-sans">

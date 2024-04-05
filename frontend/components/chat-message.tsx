@@ -67,7 +67,8 @@ export function ChatMessage({
                   element?.props.className || ''
                 )
 
-                if (match && (match[1] == 'png' || match[1] == 'html')) {
+                // If the code block is a png, render it as an image
+                if (match && (match[1] == 'png')) {
                   return <>{children}</>
                 }
               }
