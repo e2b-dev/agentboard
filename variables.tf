@@ -22,6 +22,11 @@ variable "github_repository" {
   default = "agentboard"
 }
 
+variable "vercel_project" {
+  type    = string
+  default = "agentboard"
+}
+
 variable "vercel_team" {
   type    = string
   default = "e2b"

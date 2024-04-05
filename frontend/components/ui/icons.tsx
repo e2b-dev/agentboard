@@ -17,10 +17,10 @@ function IconAgentboard({ className, ...props }: React.ComponentProps<'svg'>) {
       <style>
         {`
           #icon-agentboard {
-           fill: black
+           fill: white
           }
-          @media (prefers-color-scheme: dark) {
-            #icon-agentboard { fill: white }
+          @media (prefers-color-scheme: light) {
+            #icon-agentboard { fill: black }
       }`}
       </style>
       <path
@@ -245,10 +245,10 @@ function IconUpload({ className, ...props }: React.ComponentProps<'svg'>) {
       <style>
         {`
           #icon-upload {
-           fill: black
+           fill: white
           }
-          @media (prefers-color-scheme: dark) {
-            #icon-upload { fill: white }
+          @media (prefers-color-scheme: light) {
+            #icon-upload { fill: black }
           }`}
       </style>
       <path
@@ -320,10 +320,10 @@ function IconOpenInterpreter({
       <style>
         {`
           #open-interpreter {
-           fill: white
+           fill: black
           }
-          @media (prefers-color-scheme: dark) {
-            #open-interpreter { fill: black }
+          @media (prefers-color-scheme: light) {
+            #open-interpreter { fill: white }
           }`}
       </style>
       <circle id="open-interpreter" fill="inherit" cx="50" cy="50" r="50" />

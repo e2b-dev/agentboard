@@ -190,7 +190,7 @@ provider "vercel" {
 }
 
 resource "vercel_project" "agentboard" {
-  name           = "agentboard"
+  name           = "${var.prefix}${var.vercel_project}"
   root_directory = "frontend"
   framework      = "nextjs"
 
