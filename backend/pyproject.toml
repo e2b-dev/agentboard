@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "agentboard-backed"
+name = "agentboard-backend"
 version = "0.1.0"
 description = ""
 authors = ["Jakub Novak <jakub@e2b.dev>"]
@@ -23,4 +23,3 @@ black = "^24.3.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-

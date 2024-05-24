@@ -6,4 +6,4 @@ Uses [Open Interpreter](https://github.com/OpenInterpreter/open-interpreter) run
 
 1. Make sure you have the correct `.env` file.
 2. Install the dependencies with `poetry install` (if you don't have poetry, here's an [installation guide](https://python-poetry.org/docs/#installation).
-3. Run the backend with `uvicorn main:app --reload --port 8080`.
+3. Run the backend with `uvicorn server:app --reload --port 8080`.
