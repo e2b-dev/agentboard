@@ -25,5 +25,5 @@ It's made with [E2B's sandbox](https://e2b.dev). Inside the sandbox, we use [Ope
 1. Copy `backend/.env.example` to `backend/.env` and set the correct env vars
 1. Install dependencies `poetry install`
 1. Active poetry environment `poetry shell`
-1. Start backend `poetry run python backend/main.py`
+1. Start backend `uvicorn server:app --reload --port 8080`
 
