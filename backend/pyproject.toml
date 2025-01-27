@@ -2,7 +2,7 @@
 name = "agentboard-backend"
 version = "0.1.0"
 description = ""
-authors = ["Jakub Novak <jakub@e2b.dev>"]
+authors = ["Shouryamaan Jain <smj@empode.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

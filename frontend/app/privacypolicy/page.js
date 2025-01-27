@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
           <p>
             <strong>Company</strong> (referred to as either &quot;the
             Company&quot;, &quot;We&quot;, &quot;Us&quot; or &quot;Our&quot; in
-            this Agreement) refers to Agentboard.
+            this Agreement) refers to Operator.
           </p>
         </li>
         <li>
@@ -117,13 +117,13 @@ export default function PrivacyPolicyPage() {
         </li>
         <li>
           <p>
-            <strong>Website</strong> refers to Agentboard, accessible from{' '}
+            <strong>Website</strong> refers to Operator, accessible from{' '}
             <a
-              href="https://agentboard.dev"
+              href="https://emplode.live"
               rel="external nofollow noopener"
               target="_blank"
             >
-              https://agentboard.dev
+              https://emplode.live
             </a>
           </p>
         </li>

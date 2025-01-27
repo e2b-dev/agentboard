@@ -82,7 +82,7 @@ export const AgentSelector = () => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-xs">
-            <ExternalLink href="https://twitter.com/e2b_dev">
+            <ExternalLink href="https://twitter.com/shouryamaanjain">
               Request a new agent
             </ExternalLink>
           </DropdownMenuItem>

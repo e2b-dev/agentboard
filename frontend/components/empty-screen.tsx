@@ -22,12 +22,12 @@ export function EmptyScreen({ setInput }: Pick<UseChatHelpers, 'setInput'>) {
   return (
     <div className="mx-auto max-w-2xl px-4">
       <div className="rounded-lg border bg-background p-8">
-        <h1 className="mb-2 text-lg font-semibold">Welcome to Agentboard!</h1>
+        <h1 className="mb-2 text-lg font-semibold">Welcome to Emplode Operator!</h1>
         <p className="mb-2 leading-normal text-muted-foreground">
-          Agentboard is the easiest way to use an AI agent in the browser.
+          Operator is the easiest way to use an AI agent in the browser.
         </p>
         <p className="mb-2 leading-normal text-muted-foreground">
-          Specify a task, and Agentboard will write and execute code to complete
+          Specify a task, and Operator will write and execute code to complete
           it.
         </p>
         <p className="mb-2 leading-normal text-muted-foreground">

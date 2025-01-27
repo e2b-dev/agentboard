@@ -12,14 +12,14 @@ type AgentContextType = {
 
 const AgentContext = createContext<AgentContextType>({
   agent: AgentsEnum.OpenInterpreter,
-  model: ModelsEnum.GPT3,
+  model: ModelsEnum.GPT4,
   setAgent: () => {},
   setModel: () => {}
 })
 
 export const AgentContextProvider = (props: { children: React.ReactNode }) => {
   const [agent, setAgent] = useState<AgentsEnum>(AgentsEnum.OpenInterpreter)
-  const [model, setModel] = useState(ModelsEnum.GPT3)
+  const [model, setModel] = useState(ModelsEnum.GPT4)
 
   const value: AgentContextType = useMemo(() => {
     return {

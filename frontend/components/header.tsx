@@ -2,7 +2,6 @@ import * as React from 'react'
 import { UserMenu } from '@/components/user-menu'
 import { createClient } from '@/utils/supabase/server'
 import { AgentSelector } from '@/components/agent-selector'
-import { IconAgentboard } from '@/components/ui/icons'
 
 export async function Header() {
   const supabase = createClient()
@@ -21,8 +20,7 @@ export async function Header() {
       <div className="flex w-1/3 items-center justify-center">
         <div className="text-lg font-bold">
           <a className="flex items-center justify-center" href="/">
-            <IconAgentboard className="m-1" />
-            Agentboard
+            Emplode Operator
           </a>
         </div>
       </div>

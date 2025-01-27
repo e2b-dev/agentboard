@@ -26,10 +26,10 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(`https://www.agentboard.dev`),
+  metadataBase: new URL(`https://emplode.live`),
   title: {
-    default: 'Agentboard',
-    template: `%s - Agentboard`
+    default: 'Operator',
+    template: `%s - Operator`
   },
   description: 'Use AI agents in the browser',
 

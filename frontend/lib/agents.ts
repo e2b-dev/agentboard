@@ -2,16 +2,14 @@ export enum AgentsEnum {
   OpenInterpreter = 'OPEN_INTERPRETER'
 }
 export const Agents = {
-  [AgentsEnum.OpenInterpreter]: 'Open Interpreter'
+  [AgentsEnum.OpenInterpreter]: 'Operator'
 }
 
 export enum ModelsEnum {
-  GPT3 = 'GPT-3.5',
   GPT4 = 'GPT-4'
 }
 export const Models = {
-  [ModelsEnum.GPT3]: 'GPT-3.5',
-  [ModelsEnum.GPT4]: 'GPT-4'
+  [ModelsEnum.GPT4]: 'GPT-4o'
 }
 
 export function getInitials(text: string): string {

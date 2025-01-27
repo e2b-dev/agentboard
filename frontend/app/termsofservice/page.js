@@ -166,11 +166,11 @@ export default function TermsOfService() {
               <span style={{ color: 'rgb(0, 58, 250)' }}>
                 <bdt className="question">
                   <a
-                    href="https://agentboard.dev"
+                    href="https://emplode.live"
                     target="_blank"
                     data-custom-class="link"
                   >
-                    https://agentboard.dev
+                    https://emplode.live
                   </a>
                 </bdt>
               </span>{' '}
@@ -4609,11 +4609,11 @@ export default function TermsOfService() {
                   data-type="question"
                 >
                   <a
-                    href="https://agentboard.dev/privacypolicy"
+                    href="https://emplode.live/privacypolicy"
                     target="_blank"
                     data-custom-class="link"
                   >
-                    https://agentboard.dev/privacypolicy
+                    https://emplode.live/privacypolicy
                   </a>
                 </bdt>
               </span>
